@@ -1,0 +1,29 @@
+extends layout.pug
+block content
+
+    .content
+        h1 Reminder: #{event.title}
+        p Hello #{user.firstName} #{user.lastName},
+        p You have an upcoming event. Here are the details:
+        .event-details
+          h2 Event Information
+          table
+            tr
+              td.label Event
+              td #{event.title}
+            tr
+              td.label Date
+              td #{event.startDate}
+            tr
+              td.label Time
+              td #{eventTime}
+            if event.location
+              tr
+                td.label Location
+                td #{event.location}
+            if event.description
+              tr
+                td.label Description
+                td #{event.description}
+        p If you have any questions, feel free to contact us.
+    

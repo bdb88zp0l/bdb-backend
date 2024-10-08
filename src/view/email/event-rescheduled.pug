@@ -1,0 +1,26 @@
+extends layout.pug
+block content
+
+    .content
+        h1 Event Rescheduled: #{event.title}
+        p Hello #{user.firstName} #{user.lastName},
+        p The event you are attending has been rescheduled. Here are the updated details:
+        .event-details
+          h2 Updated Event Information
+          table
+            tr
+              td.label Event
+              td #{event.title}
+            tr
+              td.label New Date
+              td #{event.startDate}
+            if event.location
+              tr
+                td.label Location
+                td #{event.location}
+            if event.description
+              tr
+                td.label Description
+                td #{event.description}
+        p We apologize for any inconvenience caused. Please let us know if you have any questions.
+        

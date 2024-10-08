@@ -1,0 +1,22 @@
+extends layout.pug
+block content
+
+    .content
+        h1 A Calendar Has Been Shared With You: #{calendar.title}
+        p Hello #{user.firstName} #{user.lastName},
+        p A calendar named "#{calendar.title}" has been shared with you. You can now view and receive notifications for all the events under this calendar.
+        .calendar-details
+          h2 Calendar Information
+          table
+            tr
+              td.label Calendar Name
+              td #{calendar.title}
+            tr
+              td.label Created By
+              td #{owner.firstName} #{owner.lastName}
+            if calendar.description
+              tr
+                td.label Description
+                td #{calendar.description}
+        p You can explore the events under this calendar by visiting your calendar dashboard.
+        p If you have any questions or need help, feel free to reach out.

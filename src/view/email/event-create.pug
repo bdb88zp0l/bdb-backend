@@ -1,0 +1,26 @@
+extends layout.pug
+block content
+
+    .content
+        h1 New Event Created: #{event.title}
+        p Hello #{user.firstName} #{user.lastName},
+        p You have successfully created a new event. Here are the details:
+        .event-details
+          h2 Event Information
+          table
+            tr
+              td.label Event
+              td #{event.title}
+            tr
+              td.label Time
+              td #{event.startDate}
+            if event.location
+              tr
+                td.label Location
+                td #{event.location}
+            if event.description
+              tr
+                td.label Description
+                td #{event.description}
+        p You can edit or manage your event anytime in your calendar dashboard.
+        p Thank you for using our service!
