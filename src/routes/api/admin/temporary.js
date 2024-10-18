@@ -294,14 +294,166 @@ temporaryRouter.group("/temporary", (temporary) => {
     })
   );
 
-  temporary.get("/getNextCaseNumber", catchAsync(async (req, res) => {
+  temporary.get("/rand", catchAsync(async (req, res) => {
     
-    let caseNumber = await getCalendarEvents();
+    // let caseNumber = await getCalendarEvents();
+
+    let lookFor = "66f97457981447525a678de1"
+    let replaceWith = "67062826b11ae1d85701cc5a"
+    await Client.updateMany({workspace:lookFor},{workspace:replaceWith})
+    await Contact.updateMany({workspace:lookFor},{workspace:replaceWith})
+
     res.json({
       status: "Next Number",
-      data: caseNumber,
+      // data: caseNumber,
     });
   }));
+
+
+
+
+  temporary.get(
+    "/import-clients",
+    catchAsync(async (req, res) => {
+
+      let workspaceId = "66f97457981447525a678de1";
+
+      // Load the JSON data from 'data.json'
+      const data = JSON.parse(
+        fs.readFileSync("data/bdb_clients.json", "utf8")
+      );
+
+      try {
+        for (const item of data) {
+          let {
+            CLIENTID: clientNumber,
+            CLIENTNAME: clientName,
+            CONTACTPERSON: contactName,
+            DESIGNATION:designation,
+            ADDRESSLINE1: addressLine1,
+            ADDRESSLINE2: addressLine2,
+            BARANGAY: barangay,
+            TOWN_CITY: city,
+            PROVINCE_STATE: region,
+            ZIPCODE: zip,
+            PHONEEXT: phoneExt,
+            PHONE2: phone2,
+            PHONE2EXT: phone2Ext,
+            FAX: fax,
+            PHONE: phone,
+            EMAIL: email,
+            CELLNO: cellNo,
+            INDUSTRY: industry,
+            TIN: tin,
+            PARTNERLAWYERNO: partnerLawyerNo,
+            PARTNERLAWYERNAME: partnerLawyerName,
+          } = item;
+          let address = {
+            houseNumber: addressLine1,
+            street: addressLine2,
+            barangay,
+            city,
+            zip,
+            region,
+            country: "",
+          };
+
+          // continue;
+
+          // Parse contact information from 'Contact Person'
+          const firstName  =contactName
+          // console.log(firstName);
+          // continue;
+          // Check if contact already exists
+          let contact = null;
+          if (email || firstName  || phone) {
+            contact = await Contact.findOne({
+              ...(email
+                ? {
+                    "emails.value": {
+                      $in: [email],
+                    },
+                  }
+                : phone
+                ? {
+                    "phones.phoneNumber": {
+                      $in: [phone],
+                    },
+                  }
+                : {
+                    firstName: firstName ? firstName : "N/A"
+                  }),
+              workspace: workspaceId,
+            });
+          }
+
+          if (!contact) {
+            // Create new contact
+            contact = new Contact({
+              firstName: firstName ? firstName : "N/A",
+              emails: email ? [{ value: email }] : [],
+              phones: phone ? [{ phoneNumber: phone }] : [],
+              workspace: workspaceId,
+              addresses: [address],
+            });
+            await contact.save();
+            console.log(`Created new contact: ${firstName}`);
+          } else {
+            console.log(`Contact already exists: ${firstName}`);
+          }
+          // Check if client already exists
+          let client = await Client.findOne({ clientName });
+          if (!client) {
+            // Create new client
+            client = new Client({
+              clientNumber,
+              companyName: clientName,
+              addresses: [address],
+              emails: email ? [{ value: email }] : [],
+              phones: phone ? [{ phoneNumber: phone }] : [],
+              addresses: [address],
+              contact: contact._id,
+              status: "active",
+              tin,
+              industry,
+              workspace: workspaceId,
+              // Add other fields as needed
+            });
+            await client.save();
+            let tempCompanies = contact?.companies ?? [];
+            if (!tempCompanies.includes(client._id)) {
+              tempCompanies.push(client._id);
+            }
+
+            contact.companies = tempCompanies;
+            await contact.save();
+            console.log(`Created new client: ${clientName}`);
+          } else {
+            // Update existing client
+
+            client.addresses = [address];
+            client.emails = email ? [{ value: email }] : []; // Client's email
+            client.phones = phone ? [{ phoneNumber: phone }] : [];
+            client.contact = contact._id;
+            client.addresses = [address];
+            client.tin = tin;
+            client.industry = industry;
+            client.status="active"
+            await client.save();
+            console.log(`Updated existing client: ${clientName}`);
+          }
+        }
+      } catch (error) {
+        console.error("Error importing data:", error);
+      } finally {
+      }
+
+      res.json({
+        status: "Imported",
+        data,
+      });
+    })
+  );
 });
 
 module.exports = temporaryRouter;
