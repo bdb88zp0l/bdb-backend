@@ -208,7 +208,14 @@ exports.getAllCases = catchAsync(async (req, res) => {
                 },
               ],
             },
-          },
+          }, 
+          
+          {
+            $unwind: {
+              path: "$contact",
+              preserveNullAndEmptyArrays: true,
+            },
+          }
         ],
       },
     },
@@ -243,10 +250,12 @@ exports.getAllCases = catchAsync(async (req, res) => {
         ],
       },
     },
-    {$unwind:{
-path:"$team",
-preserveNullAndEmptyArrays:true,
-    }},
+    {
+      $unwind: {
+        path: "$team",
+        preserveNullAndEmptyArrays: true,
+      }
+    },
     {
       $lookup: {
         from: "users",
@@ -265,7 +274,7 @@ preserveNullAndEmptyArrays:true,
         startDate: 1,
         endDate: 1,
         createdAt: 1,
-        team:1,
+        team: 1,
         "clientData": 1,
         "createdByUser.firstName": 1,
         "createdByUser.lastName": 1,
@@ -303,7 +312,22 @@ exports.getCase = catchAsync(async (req, res) => {
   const caseData = await Case.findById(req.params.id)
     .populate("client", "companyName")
     .populate("createdBy", "firstName lastName")
-    .populate("team", "name");
+    // .populate("team")
+    // .populate("team.users.user")
+    .populate({
+      path: 'team',
+      populate:{
+        path: 'users.user',
+        
+      }
+    })
+    .populate({
+      path:'team',
+      populate:{
+        path: 'users.designation'
+      }
+    })
+
 
   if (!caseData) {
     throw new AppError("Case not found", 404);
