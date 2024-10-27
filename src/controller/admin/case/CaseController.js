@@ -189,9 +189,64 @@ exports.getAllCases = catchAsync(async (req, res) => {
         localField: "client",
         foreignField: "_id",
         as: "clientData",
+        pipeline: [
+          {
+            $lookup: {
+              from: "contacts",
+              localField: "contact",
+              foreignField: "_id",
+              as: "contact",
+              pipeline: [
+                {
+                  $project: {
+                    _id: 1,
+                    firstName: 1,
+                    lastName: 1,
+                    emails: 1,
+                    photo: 1,
+                  },
+                },
+              ],
+            },
+          },
+        ],
       },
     },
     { $unwind: "$clientData" },
+
+    {
+      $lookup: {
+        from: "teams",
+        localField: "team",
+        foreignField: "_id",
+        as: "team",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "users.user",
+              foreignField: "_id",
+              as: "users",
+              pipeline: [
+                {
+                  $project: {
+                    _id: 1,
+                    firstName: 1,
+                    lastName: 1,
+                    email: 1,
+                    photo: 1,
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {$unwind:{
+path:"$team",
+preserveNullAndEmptyArrays:true,
+    }},
     {
       $lookup: {
         from: "users",
@@ -210,7 +265,8 @@ exports.getAllCases = catchAsync(async (req, res) => {
         startDate: 1,
         endDate: 1,
         createdAt: 1,
-        "clientData.companyName": 1,
+        team:1,
+        "clientData": 1,
         "createdByUser.firstName": 1,
         "createdByUser.lastName": 1,
       },
