@@ -258,6 +258,26 @@ exports.getAllCases = catchAsync(async (req, res) => {
         preserveNullAndEmptyArrays: true,
       }
     },
+
+    {
+      $lookup: {
+        from: "users",
+        localField: "members.user",
+        foreignField: "_id",
+        as: "members",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              firstName: 1,
+              lastName: 1,
+              email: 1,
+              photo: 1,
+            },
+          },
+        ],
+      },
+    },
     {
       $lookup: {
         from: "users",
@@ -277,6 +297,7 @@ exports.getAllCases = catchAsync(async (req, res) => {
         endDate: 1,
         createdAt: 1,
         team: 1,
+        members: 1,
         "clientData": 1,
         "createdByUser.firstName": 1,
         "createdByUser.lastName": 1,
