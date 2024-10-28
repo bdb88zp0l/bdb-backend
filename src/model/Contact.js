@@ -50,6 +50,10 @@ const contactSchema = new mongoose.Schema(
       ref: "Workspace",
       required: true,
     },
+    metaData: {
+      type: mongoose.Schema.Types.Mixed, //Basically used to save legacy informations
+      default: {},
+    },
 
     addresses: [
       {

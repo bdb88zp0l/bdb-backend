@@ -136,6 +136,10 @@ const clientSchema = new Schema(
       type: Date,
       default: null,
     },
+    metaData: {
+      type: mongoose.Schema.Types.Mixed, //Basically used to save legacy informations
+      default: {},
+    },
   },
   { timestamps: true }
 );

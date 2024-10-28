@@ -99,6 +99,10 @@ const caseSchema = new Schema(
       ref: "Team", // Single team related to the case
       default: null,
     },
+    metaData: {
+      type: mongoose.Schema.Types.Mixed, //Basically used to save legacy informations
+      default: {},
+    },
     statusHistory: [
       {
         status: {
