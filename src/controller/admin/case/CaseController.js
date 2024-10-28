@@ -394,7 +394,7 @@ exports.updateCase = catchAsync(async (req, res) => {
     caseNumber: "required|string",
     title: "required|string",
     client: "required|mongoid",
-    team: "required|mongoid",
+    // team: "required|mongoid",
     status: "in:closed,active",
   });
 
