@@ -27,6 +27,7 @@ caseRouter.group("/cases", (route) => {
     HasPermission("case.update"),
     CaseController.updateCaseStatus
   );
+  route.post("/:id/members", HasPermission("case.update"), CaseController.addMember);
   // Get data for case page
   route.get("/data/get", CaseController.getData);
 });

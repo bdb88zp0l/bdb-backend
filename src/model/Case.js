@@ -99,6 +99,23 @@ const caseSchema = new Schema(
       ref: "Team", // Single team related to the case
       default: null,
     },
+    members: [
+      {
+        user: {
+          type: Schema.Types.ObjectId,
+          ref: "User", // Referencing the User model
+          required: true,
+        },
+        designation: {
+          type: Schema.Types.ObjectId,
+          ref: "CaseTeamDesignation",
+        },
+        rate: {
+          type: Number,
+          default: 0,
+        },
+      },
+    ],
     metaData: {
       type: mongoose.Schema.Types.Mixed, //Basically used to save legacy informations
       default: {},

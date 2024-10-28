@@ -73,12 +73,14 @@ exports.createCase = catchAsync(async (req, res) => {
   await SimpleValidator(req.body, {
     title: "required|string",
     client: "required|mongoid",
-    team: "required|mongoid",
+    // team: "required|mongoid",
   });
 
-  team = await Team.findById(team);
-  if (!team) {
-    throw new AppError("Team not found", 422);
+  if (team) {
+    team = await Team.findById(team);
+    if (!team) {
+      throw new AppError("Team not found", 422);
+    }
   }
 
   if (!caseNumber) {
@@ -135,7 +137,7 @@ exports.createCase = catchAsync(async (req, res) => {
     metaData: nodeData,
     nodeType: "folder",
     visibility: "protected",
-    sharedWithTeams: [team._id],
+    sharedWithTeams: team ? [team._id] : [],
   });
 
   res.status(201).json({
@@ -208,8 +210,8 @@ exports.getAllCases = catchAsync(async (req, res) => {
                 },
               ],
             },
-          }, 
-          
+          },
+
           {
             $unwind: {
               path: "$contact",
@@ -256,6 +258,26 @@ exports.getAllCases = catchAsync(async (req, res) => {
         preserveNullAndEmptyArrays: true,
       }
     },
+
+    {
+      $lookup: {
+        from: "users",
+        localField: "members.user",
+        foreignField: "_id",
+        as: "members",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              firstName: 1,
+              lastName: 1,
+              email: 1,
+              photo: 1,
+            },
+          },
+        ],
+      },
+    },
     {
       $lookup: {
         from: "users",
@@ -275,6 +297,7 @@ exports.getAllCases = catchAsync(async (req, res) => {
         endDate: 1,
         createdAt: 1,
         team: 1,
+        members: 1,
         "clientData": 1,
         "createdByUser.firstName": 1,
         "createdByUser.lastName": 1,
@@ -310,32 +333,50 @@ exports.getAllCases = catchAsync(async (req, res) => {
  */
 exports.getCase = catchAsync(async (req, res) => {
   const caseData = await Case.findById(req.params.id)
-    .populate("client", "companyName")
+    .populate("client", "companyName clientNumber _id")
     .populate("createdBy", "firstName lastName")
     // .populate("team")
     // .populate("team.users.user")
     .populate({
       path: 'team',
-      populate:{
+      populate: {
         path: 'users.user',
-        
+        select: "firstName lastName email photo _id"
+
       }
     })
     .populate({
-      path:'team',
-      populate:{
+      path: 'team',
+      populate: {
         path: 'users.designation'
       }
+    }).populate({
+      path: 'members',
+      populate: {
+        path: 'user',
+        select: "firstName lastName email photo _id"
+
+      }
     })
+    .populate({
+      path: 'members',
+      populate: {
+        path: 'designation'
+      }
+    }).lean()
 
 
   if (!caseData) {
     throw new AppError("Case not found", 404);
   }
+  let files = await DocumentNode.find({
+    case: caseData._id,
+    paperMergeParentNodeId: caseData.paperMergeNodeId
+  }).lean();
 
   res.json({
     status: "success",
-    data: caseData,
+    data: { ...caseData, files },
   });
 });
 
@@ -378,7 +419,7 @@ exports.updateCase = catchAsync(async (req, res) => {
     caseNumber: "required|string",
     title: "required|string",
     client: "required|mongoid",
-    team: "required|mongoid",
+    // team: "required|mongoid",
     status: "in:closed,active",
   });
 
@@ -417,6 +458,36 @@ exports.updateCase = catchAsync(async (req, res) => {
   res.json({
     message: "Case updated successfully",
     data: updatedCase,
+  });
+});
+
+exports.addMember = catchAsync(async (req, res) => {
+  const { users } = req.body;
+  await SimpleValidator(req.body, {
+    users: "required|array",
+  });
+
+  const foundCase = await Case.findById(req.params.id);
+  if (!foundCase) {
+    throw new AppError("Case not found", 404);
+  }
+  await Case.findByIdAndUpdate(req.params.id, {
+    members: users
+  });
+
+  let userIds = users.map(user => user.user);
+  console.log(userIds);
+
+  await DocumentNode.findOneAndUpdate({
+    case: foundCase._id,
+  }, {
+    "sharedWith": userIds
+  });
+
+
+  res.json({
+    message: "Member added successfully",
+    data: null,
   });
 });
 
