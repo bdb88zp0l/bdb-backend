@@ -363,16 +363,20 @@ exports.getCase = catchAsync(async (req, res) => {
       populate: {
         path: 'designation'
       }
-    })
+    }).lean()
 
 
   if (!caseData) {
     throw new AppError("Case not found", 404);
   }
+  let files = await DocumentNode.find({
+    case: caseData._id,
+    paperMergeParentNodeId: caseData.paperMergeNodeId
+  }).lean();
 
   res.json({
     status: "success",
-    data: caseData,
+    data: { ...caseData, files },
   });
 });
 
