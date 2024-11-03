@@ -17,6 +17,48 @@ exports.getDashboard = catchAsync(async (req, res) => {
 
 
 
+    const topClients = await Case.aggregate([
+        {
+            // Group by client and calculate the total contract price
+            $group: {
+                _id: "$client",
+                totalContractPrice: { $sum: "$contractPrice" }
+            }
+        },
+        {
+            // Sort by total contract price in descending order
+            $sort: { totalContractPrice: -1 }
+        },
+        {
+            // Limit to the top 6 clients (adjust the limit as needed)
+            $limit: 6
+        },
+        {
+            // Populate client information
+            $lookup: {
+                from: "clients", // Collection name in MongoDB
+                localField: "_id",
+                foreignField: "_id",
+                as: "clientInfo"
+            }
+        },
+        {
+            // Unwind clientInfo array to get a single object
+            $unwind: "$clientInfo"
+        },
+        {
+            // Project only required fields
+            $project: {
+                _id: 0,
+                clientId: "$_id",
+                totalContractPrice: 1,
+                clientInfo: 1
+            }
+        }
+    ]);
+
+
+
     let caseStatusStatistics = await Case.aggregate([
         {
             $group: {
@@ -42,12 +84,10 @@ exports.getDashboard = catchAsync(async (req, res) => {
             $sort: { count: -1 }   // Optional: sort by count in descending order
         }
     ])
+    const now = new Date();
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
     const clientMonthlyStatistics = await Client.aggregate([
-        // {
-        //     // Filter only 'active' clients, as an example; adjust if needed
-        //     // $match: { status: "active" }
-        // },
         {
             // Group by year and month to get monthly totals
             $group: {
@@ -107,6 +147,36 @@ exports.getDashboard = catchAsync(async (req, res) => {
         }
     ]);
 
+    // Step 1: Generate the last 12 months' data structure with defaults
+    // const last12Months = Array.from({ length: 12 }, (_, i) => {
+    //     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    //     return {
+    //         month: date.getMonth() + 1,
+    //         year: date.getFullYear(),
+    //         totalClients: 0,
+    //         growthPercentage: 0
+    //     };
+    // }).reverse();
+
+    // Step 2: Map aggregated data to the last 12 months, filling in missing months with zeroes
+    const monthlyData = last12Months.map((date, index) => {
+        const found = clientMonthlyStatistics.find(
+            stat => stat.year === date.year && stat.month === date.month
+        );
+
+        // If month data is found, return it; otherwise, keep the default (zero growth)
+        return found
+            ? {
+                ...date,
+                totalClients: found.totalClients,
+                growthPercentage: found.growthPercentage
+            }
+            : {
+                ...date,
+                totalClients: 0,
+                growthPercentage: 0
+            };
+    }).reverse();
 
 
     const caseMonthlyData = await Case.aggregate([
@@ -421,11 +491,12 @@ exports.getDashboard = catchAsync(async (req, res) => {
     res.json({
         message: "Fetched successfully",
         data: {
+            topClients,
             contractPriceMonthlyStats,
             topCases,
             caseMonthlyData: caseMonthlyData,
             activeCaseCount,
-            clientMonthlyStatistics,
+            clientMonthlyStatistics: monthlyData,
             caseStatusStatistics,
             clientStatusStatistics, recentActivities
         }
