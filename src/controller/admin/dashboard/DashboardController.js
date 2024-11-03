@@ -455,6 +455,7 @@ exports.getDashboard = catchAsync(async (req, res) => {
     const topCases = await Case.find()
         .sort({ contractPrice: -1 }) // Sort by contractPrice in descending order
         .limit(5) // Limit to the top 5 results
+        .populate("client", "companyName")
         .select("caseNumber title contractPrice"); // Select only necessary fields
 
 
