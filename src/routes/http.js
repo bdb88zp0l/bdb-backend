@@ -22,12 +22,14 @@ const eventRouter = require("./api/admin/event");
 const calendarRouter = require("./api/admin/calendar");
 const notificationRouter = require("./api/admin/notification");
 const dumpRouter = require("./api/admin/dump");
+const dashboardRouter = require("./api/admin/dashboard");
 
 const router = require("express").Router();
 require("express-group-routes");
 router.group("/api", (api) => {
   api.use(configRouter);
   api.use(authRouter);
+  api.use(dashboardRouter);
   api.use(profileRouter);
   api.use(securityRouter);
   api.use(permissionRouter);
