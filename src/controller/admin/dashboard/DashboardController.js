@@ -2,6 +2,7 @@ const catchAsync = require("../../../exception/catchAsync");
 const Case = require("../../../model/Case");
 const Client = require("../../../model/Client");
 const moment = require("moment");
+const Notification = require("../../../model/Notification");
 
 exports.getDashboard = catchAsync(async (req, res) => {
 
@@ -113,8 +114,8 @@ exports.getDashboard = catchAsync(async (req, res) => {
         {
             $group: {
                 _id: {
-                    year: { $year: "$createdAt" },
-                    month: { $month: "$createdAt" },
+                    year: { $year: "$startDate" },
+                    month: { $month: "$startDate" },
                     status: "$status"
                 },
                 totalCases: { $sum: 1 }
@@ -415,16 +416,18 @@ exports.getDashboard = catchAsync(async (req, res) => {
             $sort: { _id: 1 },
         },
     ]);
+
+    let recentActivities = await Notification.find({}).sort({ createdAt: -1 }).limit(5);
     res.json({
         message: "Fetched successfully",
         data: {
             contractPriceMonthlyStats,
             topCases,
-            caseMonthlyData,
+            caseMonthlyData: caseMonthlyData,
             activeCaseCount,
             clientMonthlyStatistics,
             caseStatusStatistics,
-            clientStatusStatistics
+            clientStatusStatistics, recentActivities
         }
     });
 });
