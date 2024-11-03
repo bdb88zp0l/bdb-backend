@@ -15,7 +15,7 @@ const { getCalendarEvents } = require("../../../services/microsoftAzure");
 // const { getUserInfo, getCalendarEvents } = require("../../../services/microsoftAzure");
 const { createNode } = require("../../../services/PaperMerge");
 const { setConfigValue } = require("../../../utils/VariableManager");
-
+const moment = require("moment");
 const fs = require("fs");
 
 const temporaryRouter = require("express").Router();
@@ -159,6 +159,44 @@ temporaryRouter.group("/temporary", (temporary) => {
     res.json({
       status: "Next Number",
       // data: caseNumber,
+    });
+  }));
+
+
+
+  temporary.get("/dump-contract-price", catchAsync(async (req, res) => {
+
+
+    let cases = await Case.find({})
+    for (const element of cases) {
+      element.status = element?.metaData?.ISACTIVE == 0 ? "inactive" : "active"
+      await element.save()
+      console.log(element.caseNumber)
+
+    }
+
+    // let clients = await Client.find({})
+    // for (const element of clients) {
+    //   element.status = element?.metaData?.ISACTIVE == 0 ? "inactive" : "active"
+    //   await element.save()
+    //   console.log("ClientId ", element.clientNumber, moment.unix(element.metaData.CREATED_AT).format("YYYY-MM-DD"), " - ", element.metaData.CREATED_AT)
+    // }
+    // let clients = await Client.find({})
+    // for (const element of clients) {
+    //   element.engagedAt = element?.metaData?.CREATED_AT ? moment.unix(element.metaData.CREATED_AT).toDate() : null
+    //   await element.save()
+    //   console.log("ClientId ", element.clientNumber, moment.unix(element.metaData.CREATED_AT).format("YYYY-MM-DD"), " - ", element.metaData.CREATED_AT)
+    // }
+
+    // let clients = await Client.updateMany({ createdAt: { $lt: new Date("2024-10-15") } }, { $set: { status: "inDraft" } })
+    // await Client.deleteMany({ status: "inDraft" })
+
+
+
+
+    res.json({
+      status: "Dumped successfully",
+      data: "Done"
     });
   }));
 });

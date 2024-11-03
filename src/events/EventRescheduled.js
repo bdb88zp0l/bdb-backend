@@ -1,3 +1,4 @@
+const Email = require("../config/email");
 const Calendar = require("../model/Calendar");
 const User = require("../model/User");
 const { createNotification } = require("../services/NotificationService");

@@ -43,8 +43,8 @@ const caseSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["active", "deleted", "closed"],
-      default: "open",
+      enum: ["active", "deleted", "inactive"],
+      default: "active",
     },
     client: {
       type: Schema.Types.ObjectId,
@@ -67,6 +67,14 @@ const caseSchema = new Schema(
     serviceType: {
       type: String,
       default: null,
+    },
+    caseStatus: {
+      type: String,
+      default: null,
+    },
+    contractPrice: {
+      type: Number,
+      default: 0,
     },
     currency: {
       type: String,
