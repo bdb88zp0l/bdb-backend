@@ -417,7 +417,7 @@ exports.getDashboard = catchAsync(async (req, res) => {
         },
     ]);
 
-    let recentActivities = await Notification.find({}).sort({ createdAt: -1 }).limit(5);
+    let recentActivities = await Notification.find({}).populate("user", "firstName lastName email ").sort({ createdAt: -1 }).limit(5);
     res.json({
         message: "Fetched successfully",
         data: {
