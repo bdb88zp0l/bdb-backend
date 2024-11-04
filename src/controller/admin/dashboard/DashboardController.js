@@ -16,49 +16,6 @@ exports.getDashboard = catchAsync(async (req, res) => {
     }
 
 
-
-    const topClients = await Case.aggregate([
-        {
-            // Group by client and calculate the total contract price
-            $group: {
-                _id: "$client",
-                totalContractPrice: { $sum: "$contractPrice" }
-            }
-        },
-        {
-            // Sort by total contract price in descending order
-            $sort: { totalContractPrice: -1 }
-        },
-        {
-            // Limit to the top 6 clients (adjust the limit as needed)
-            $limit: 6
-        },
-        {
-            // Populate client information
-            $lookup: {
-                from: "clients", // Collection name in MongoDB
-                localField: "_id",
-                foreignField: "_id",
-                as: "clientInfo"
-            }
-        },
-        {
-            // Unwind clientInfo array to get a single object
-            $unwind: "$clientInfo"
-        },
-        {
-            // Project only required fields
-            $project: {
-                _id: 0,
-                clientId: "$_id",
-                totalContractPrice: 1,
-                clientInfo: 1
-            }
-        }
-    ]);
-
-
-
     let caseStatusStatistics = await Case.aggregate([
         {
             $group: {
@@ -320,53 +277,194 @@ exports.getDashboard = catchAsync(async (req, res) => {
             }
         }
     ]);
-    const topCases = await Case.find()
-        .sort({ contractPrice: -1 }) // Sort by contractPrice in descending order
-        .limit(5) // Limit to the top 5 results
-        .populate("client", "companyName")
-        .select("caseNumber title contractPrice"); // Select only necessary fields
 
-
-    const contractPriceMonthlyStats = await Case.aggregate([
-        // Match cases from the last 12 months
-        {
-            $match: {
-                startDate: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 12)) },
-            },
-        },
-        // Project the year and month from startDate
-        {
-            $project: {
-                contractPrice: 1,
-                yearMonth: {
-                    $dateToString: { format: "%Y-%m", date: "$startDate" },
-                },
-            },
-        },
-        // Group by yearMonth and sum contract prices
-        {
-            $group: {
-                _id: "$yearMonth",
-                totalContractPrice: { $sum: "$contractPrice" },
-            },
-        },
-        // Sort by yearMonth in ascending order
-        {
-            $sort: { _id: 1 },
-        },
-    ]);
 
     let recentActivities = await Notification.find({}).populate("user", "firstName lastName email ").sort({ createdAt: -1 }).limit(5);
 
     const clientStats = (await clientMonthlyData)[0];
     const caseStats = (await caseMonthlyData)[0];
+    
+
+
+    const topClientsByCase = await Case.aggregate([
+        {
+            $group: {
+                _id: "$client",
+                totalCases: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { totalCases: -1 }
+        },
+        {
+            $limit: 5
+        },
+        {
+            // Lookup client information
+            $lookup: {
+                from: "clients",
+                localField: "_id",
+                foreignField: "_id",
+                as: "clientInfo"
+            }
+        },
+        {
+            $unwind: "$clientInfo"
+        },
+        {
+            // Add lookup for contact information
+            $lookup: {
+                from: "contacts",
+                localField: "clientInfo.contact",
+                foreignField: "_id",
+                as: "contactInfo"
+            }
+        },
+        {
+            $unwind: "$contactInfo"
+        },
+        {
+            $project: {
+                _id: 0,
+                clientId: "$_id",
+                totalCases: 1,
+                clientInfo: {
+                    companyName: "$clientInfo.companyName",
+                    email: "$clientInfo.email",
+                    clientNumber: "$clientInfo.clientNumber",
+                    code: "$clientInfo.code",
+                    logo: "$clientInfo.logo"
+                },
+                contactInfo: {
+                    firstName: "$contactInfo.firstName",
+                    lastName: "$contactInfo.lastName",
+                    email: "$contactInfo.email",
+                    phone: "$contactInfo.phone",
+                    designation: "$contactInfo.designation"
+                }
+            }
+        }
+    ]);
+
+    const latestClients = await Client.aggregate([
+        {
+            $match: {
+                status: "active"
+            }
+        },
+        {
+            $sort: {
+                engagedAt: -1 // Sort by engagement date in descending order
+            }
+        },
+        {
+            $limit: 10
+        },
+        {
+            // Lookup contact information
+            $lookup: {
+                from: "contacts",
+                localField: "contact",
+                foreignField: "_id",
+                as: "contactInfo"
+            }
+        },
+        {
+            $unwind: "$contactInfo"
+        },
+        {
+            $project: {
+                _id: 1,
+                companyName: 1,
+                email: 1,
+                clientNumber: 1,
+                code: 1,
+                engagedAt: 1,
+                status: 1,
+                logo: 1,
+                contactInfo: {
+                    firstName: "$contactInfo.firstName",
+                    lastName: "$contactInfo.lastName",
+                    emails: "$contactInfo.emails",
+                    phone: "$contactInfo.phone",
+                    designation: "$contactInfo.designation"
+                }
+            }
+        }
+    ]);
+
+    const monthlyStatistics = await Promise.all([
+        // Cases per month
+        await Case.aggregate([
+            {
+                $match: {
+                    startDate: {
+                        $gte: new Date(new Date().setMonth(new Date().getMonth() - 12))
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$startDate" },
+                        month: { $month: "$startDate" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    count: 1
+                }
+            }
+        ]),
+        // Clients per month
+        await Client.aggregate([
+            {
+                $match: {
+                    engagedAt: {
+                        $gte: new Date(new Date().setMonth(new Date().getMonth() - 12))
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$engagedAt" },
+                        month: { $month: "$engagedAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    count: 1
+                }
+            }
+        ])
+    ]).then(([caseCounts, clientCounts]) => {
+        // Map the results to the last 12 months
+        return last12Months.reverse().map(month => ({
+            yearMonth: `${month.year}-${month.month}`,
+            year: month.year,
+            month: month.month,
+            cases: caseCounts.find(c => c.year === month.year && c.month === month.month)?.count || 0,
+            clients: clientCounts.find(c => c.year === month.year && c.month === month.month)?.count || 0
+        }))
+    });
 
     res.json({
         message: "Fetched successfully",
         data: {
-            topClients,
-            contractPriceMonthlyStats,
-            topCases,
+            monthlyStatistics,
+            topClientsByCase,
+            latestClients,
             caseMonthlyData: caseStats,
             clientMonthlyData: clientStats,
             caseStatusStatistics,
