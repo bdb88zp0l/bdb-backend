@@ -513,7 +513,7 @@ exports.updateContact = catchAsync(async (req, res) => {
       // Optionally, delete the client or update its contact reference
       // client.contact = null;
       // await client.save();
-      await client.remove(); // If you choose to delete
+      await Client.findByIdAndDelete(companyId)
     }
   }
 
