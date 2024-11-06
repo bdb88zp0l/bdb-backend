@@ -45,6 +45,7 @@ exports.info = catchAsync(async (req, res) => {
     googleAuthenticator: user.googleAuthenticator,
     roleType: user.roleType,
     role: user.role,
+    hourlyRate: user?.hourlyRate ?? 0,
     defaultWorkspace: user.defaultWorkspace,
     permissions,
     status: user.status,
@@ -78,7 +79,7 @@ exports.updateProfile = catchAsync(async (req, res) => {
     firstName: "required",
   });
 
-  const { firstName, lastName } = req.body;
+  const { firstName, lastName, hourlyRate } = req.body;
 
   // 2. Find the user by ID
   user = await User.findById(user._id);
@@ -92,6 +93,9 @@ exports.updateProfile = catchAsync(async (req, res) => {
   }
   if (lastName) {
     user.lastName = lastName;
+  }
+  if (hourlyRate) {
+    user.hourlyRate = hourlyRate
   }
 
   if (req.file) {
@@ -116,6 +120,7 @@ exports.updateProfile = catchAsync(async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         photo: user.photo,
+        hourlyRate: user?.hourlyRate ?? 0,
         role: user.roleType,
         status: user.status,
       },

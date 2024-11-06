@@ -1,11 +1,11 @@
 /**
  * @fileoverview Case Controller
- * 
+ *
  * This module provides controller functions for managing cases in the system.
  * It handles CRUD operations for cases, including creation, retrieval, updating,
  * and soft deletion of case records. The controller also manages related data
  * such as clients, documents, teams, and case status history.
- * 
+ *
  * @module CaseController
  * @requires ../../../exception/AppError
  * @requires ../../../exception/catchAsync
@@ -34,7 +34,7 @@ const SimpleValidator = require("../../../validator/simpleValidator");
 
 /**
  * Creates a new case
- * 
+ *
  * This function handles the creation of a new case in the system. It validates
  * the incoming data, creates a new case in the database, and sets up the
  * associated document structure in PaperMerge.
@@ -148,7 +148,7 @@ exports.createCase = catchAsync(async (req, res) => {
 
 /**
  * Retrieves all cases with pagination and filtering options
- * 
+ *
  * @function getAllCases
  * @async
  * @param {Object} req - The HTTP request object
@@ -217,7 +217,7 @@ exports.getAllCases = catchAsync(async (req, res) => {
               path: "$contact",
               preserveNullAndEmptyArrays: true,
             },
-          }
+          },
         ],
       },
     },
@@ -256,7 +256,7 @@ exports.getAllCases = catchAsync(async (req, res) => {
       $unwind: {
         path: "$team",
         preserveNullAndEmptyArrays: true,
-      }
+      },
     },
 
     {
@@ -298,7 +298,7 @@ exports.getAllCases = catchAsync(async (req, res) => {
         createdAt: 1,
         team: 1,
         members: 1,
-        "clientData": 1,
+        clientData: 1,
         "createdByUser.firstName": 1,
         "createdByUser.lastName": 1,
       },
@@ -321,7 +321,7 @@ exports.getAllCases = catchAsync(async (req, res) => {
 
 /**
  * Retrieves a specific case by ID
- * 
+ *
  * @function getCase
  * @async
  * @param {Object} req - The HTTP request object
@@ -338,40 +338,39 @@ exports.getCase = catchAsync(async (req, res) => {
     // .populate("team")
     // .populate("team.users.user")
     .populate({
-      path: 'team',
+      path: "team",
       populate: {
-        path: 'users.user',
-        select: "firstName lastName email photo _id"
-
-      }
+        path: "users.user",
+        select: "firstName lastName email photo _id",
+      },
     })
     .populate({
-      path: 'team',
+      path: "team",
       populate: {
-        path: 'users.designation'
-      }
-    }).populate({
-      path: 'members',
-      populate: {
-        path: 'user',
-        select: "firstName lastName email photo _id"
-
-      }
+        path: "users.designation",
+      },
     })
     .populate({
-      path: 'members',
+      path: "members",
       populate: {
-        path: 'designation'
-      }
-    }).lean()
-
+        path: "user",
+        select: "firstName lastName email photo _id",
+      },
+    })
+    .populate({
+      path: "members",
+      populate: {
+        path: "designation",
+      },
+    })
+    .lean();
 
   if (!caseData) {
     throw new AppError("Case not found", 404);
   }
   let files = await DocumentNode.find({
     case: caseData._id,
-    paperMergeParentNodeId: caseData.paperMergeNodeId
+    paperMergeParentNodeId: caseData.paperMergeNodeId,
   }).lean();
 
   res.json({
@@ -382,7 +381,7 @@ exports.getCase = catchAsync(async (req, res) => {
 
 /**
  * Updates a specific case by ID
- * 
+ *
  * @function updateCase
  * @async
  * @param {Object} req - The HTTP request object
@@ -472,18 +471,20 @@ exports.addMember = catchAsync(async (req, res) => {
     throw new AppError("Case not found", 404);
   }
   await Case.findByIdAndUpdate(req.params.id, {
-    members: users
+    members: users,
   });
 
-  let userIds = users.map(user => user.user);
+  let userIds = users.map((user) => user.user);
   console.log(userIds);
 
-  await DocumentNode.findOneAndUpdate({
-    case: foundCase._id,
-  }, {
-    "sharedWith": userIds
-  });
-
+  await DocumentNode.findOneAndUpdate(
+    {
+      case: foundCase._id,
+    },
+    {
+      sharedWith: userIds,
+    }
+  );
 
   res.json({
     message: "Member added successfully",
@@ -493,7 +494,7 @@ exports.addMember = catchAsync(async (req, res) => {
 
 /**
  * Soft deletes a case by updating its status to "deleted"
- * 
+ *
  * @function deleteCase
  * @async
  * @param {Object} req - The HTTP request object
@@ -525,7 +526,7 @@ exports.deleteCase = catchAsync(async (req, res) => {
 
 /**
  * Updates the status of a case and adds a status history entry
- * 
+ *
  * @function updateCaseStatus
  * @async
  * @param {Object} req - The HTTP request object
@@ -575,7 +576,7 @@ exports.updateCaseStatus = catchAsync(async (req, res) => {
 
 /**
  * Retrieves data required for creating a new case
- * 
+ *
  * @function getData
  * @async
  * @param {Object} req - The HTTP request object

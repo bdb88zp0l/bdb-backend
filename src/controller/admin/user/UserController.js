@@ -56,7 +56,7 @@ exports.createUser = catchAsync(async (req, res) => {
     role: "required|mongoid",
   });
 
-  const { firstName, lastName, email, password, phone, role } = req.body;
+  const { firstName, lastName, email, password, phone, role, hourlyRate } = req.body;
 
   // Validate the role ID exists in the Role collection
   const roleExists = await Role.findById(role);
@@ -76,7 +76,7 @@ exports.createUser = catchAsync(async (req, res) => {
     lastName,
     email,
     password,
-    phone,
+    phone, hourlyRate,
     role: role,
     status: "activated",
   });
@@ -248,7 +248,7 @@ exports.updateUser = catchAsync(async (req, res) => {
     // role: "required|mongoid",
   });
 
-  const { firstName, lastName, email, role, status, phone, password } =
+  const { firstName, lastName, email, role, status, phone, password, hourlyRate } =
     req.body;
   const userId = req.params.id;
 
@@ -282,6 +282,10 @@ exports.updateUser = catchAsync(async (req, res) => {
   }
   if (password) {
     user.password = password;
+  }
+
+  if (hourlyRate) {
+    user.hourlyRate = hourlyRate
   }
   if (req.file) {
     if (user?.photo) {

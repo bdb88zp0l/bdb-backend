@@ -22,11 +22,7 @@ const teamSchema = new Schema(
         designation: {
           type: Schema.Types.ObjectId,
           ref: "CaseTeamDesignation",
-        },
-        rate: {
-          type: Number,
-          default: 0,
-        },
+        }
       },
     ],
     createdBy: {
