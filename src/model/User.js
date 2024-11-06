@@ -53,6 +53,10 @@ const schema = new Schema(
       ref: "Workspace",
       default: null,
     },
+    hourlyRate: {
+      type: Number,
+      default: 0,
+    },
 
     status: {
       type: String,
