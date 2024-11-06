@@ -588,7 +588,7 @@ exports.getData = catchAsync(async (req, res) => {
   let { defaultWorkspace } = req.user;
   let designations = await CaseTeamDesignation.find({ status: "active" });
   let users = await User.find({ status: "activated" }).select(
-    "firstName lastName email photo phone"
+    "firstName lastName email photo phone hourlyRate"
   );
   let clients = await Client.find({
     status: "active",
