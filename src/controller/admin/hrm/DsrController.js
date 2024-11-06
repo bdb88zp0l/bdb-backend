@@ -1,4 +1,3 @@
-
 const catchAsync = require("../../../exception/catchAsync");
 const SimpleValidator = require("../../../validator/simpleValidator");
 const DSRTimeTracking = require("../../../model/DSRTimeTracking");
@@ -7,56 +6,51 @@ const moment = require("moment");
 const Case = require("../../../model/Case");
 const User = require("../../../model/User");
 exports.createDSRTimeTracking = catchAsync(async (req, res) => {
-
-  let user = req.user
+  let user = req.user;
 
   // Validate incoming data
   await SimpleValidator(req.body, {
     title: "required|string",
     case: "required|mongoid",
     hourCount: "required|numeric",
-    date: "required"
+    date: "required",
   });
-  const {
-    title,
-    description,
-    hourCount, date
-  } = req.body;
+  const { title, description, hourCount, date } = req.body;
 
-  let caseInfo = await Case.findById(req.body.case)
+  let caseInfo = await Case.findById(req.body.case);
 
   if (!caseInfo) {
-    throw new AppError("Invalid case id provided", 422)
+    throw new AppError("Invalid case id provided", 422);
   }
-  let hourlyRate = user?.hourlyRate ?? 0
-  let members = caseInfo?.members ?? []
+  let hourlyRate = user?.hourlyRate ?? 0;
+  let members = caseInfo?.members ?? [];
   if (members?.length > 0) {
-    let caseRate = members?.find(item => {
-      return item.user.toString() == user._id.toString()
-    })?.hourlyRate ?? 0
+    let caseRate =
+      members?.find((item) => {
+        return item.user.toString() == user._id.toString();
+      })?.hourlyRate ?? 0;
     if (caseRate) {
-      hourlyRate = caseRate
+      hourlyRate = caseRate;
     }
   }
 
   const newDSRTimeTracking = await DSRTimeTracking.create({
-
     title,
     description,
     hourCount,
     hourlyRate,
     case: caseInfo._id,
     user: req?.body?.user ? req?.body?.user : req.user._id,
-    date: moment(date).toDate()
+    date: moment(date).toDate(),
   });
   res.status(201).json({
-    message: "DST created successfully",
+    message: "DSR created successfully",
     data: newDSRTimeTracking,
   });
 });
 
 exports.getAllDSRTimeTrackings = catchAsync(async (req, res) => {
-  let user = req.user
+  let user = req.user;
   const { page = 1, limit = 10, search, caseId } = req.query;
 
   let match = {
@@ -66,31 +60,34 @@ exports.getAllDSRTimeTrackings = catchAsync(async (req, res) => {
     status: "active",
   };
 
-  const aggregatedQuery = DSRTimeTracking.aggregate([{ $match: match },
-  {
-    $lookup: {
-      from: "cases",
-      localField: "case",
-      foreignField: "_id",
-      as: "case",
-      pipeline: [
-        {
-          $project: {
-            caseNumber: 1,
-            title: 1,
-            startDate: 1,
-            endDate: 1
-          }
-        }
-      ]
+  const aggregatedQuery = DSRTimeTracking.aggregate([
+    { $match: match },
+    {
+      $lookup: {
+        from: "cases",
+        localField: "case",
+        foreignField: "_id",
+        as: "case",
+        pipeline: [
+          {
+            $project: {
+              caseNumber: 1,
+              title: 1,
+              startDate: 1,
+              endDate: 1,
+            },
+          },
+        ],
+      },
     },
-  },
-  {
-    $unwind: {
-      path: "$case",
-      preserveNullAndEmptyArrays: true,
+    {
+      $unwind: {
+        path: "$case",
+        preserveNullAndEmptyArrays: true,
+      },
     },
-  }, { $sort: { date: -1 } }]);
+    { $sort: { date: -1 } },
+  ]);
 
   const data = await DSRTimeTracking.aggregatePaginate(aggregatedQuery, {
     page: parseInt(page),
@@ -128,12 +125,11 @@ exports.updateDSRTimeTracking = catchAsync(async (req, res) => {
     hourCount: "required|numeric",
     date: "required",
   });
-  let caseInfo = await Case.findById(req.body.case)
+  let caseInfo = await Case.findById(req.body.case);
 
   if (!caseInfo) {
-    throw new AppError("Invalid case id provided", 422)
+    throw new AppError("Invalid case id provided", 422);
   }
-
 
   const updatedDSRTimeTracking = await DSRTimeTracking.findByIdAndUpdate(
     req.params.id,
@@ -141,7 +137,8 @@ exports.updateDSRTimeTracking = catchAsync(async (req, res) => {
       title,
       description,
       case: caseInfo._id,
-      hourCount, date: moment(date).toDate()
+      hourCount,
+      date: moment(date).toDate(),
     },
     { runValidators: true }
   );
@@ -164,7 +161,6 @@ exports.deleteDSRTimeTracking = catchAsync(async (req, res) => {
   });
 });
 
-
 exports.getData = catchAsync(async (req, res) => {
   let cases = await Case.find({ status: "active" }).select(
     "title caseNumber _id"
@@ -176,7 +172,8 @@ exports.getData = catchAsync(async (req, res) => {
   res.json({
     status: "success",
     data: {
-      cases, users
+      cases,
+      users,
     },
   });
 });

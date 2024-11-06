@@ -1,10 +1,10 @@
 /**
  * @fileoverview Main application entry point
- * 
+ *
  * This module sets up the Express application, configures middleware,
  * establishes routes, and handles errors. It serves as the central
  * configuration point for the Node.js server.
- * 
+ *
  * @module app
  * @requires express
  * @requires cors
