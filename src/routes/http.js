@@ -24,6 +24,8 @@ const notificationRouter = require("./api/admin/notification");
 const dumpRouter = require("./api/admin/dump");
 const dashboardRouter = require("./api/admin/dashboard");
 const dsrRouter = require("./api/admin/dsr");
+const billingRouter = require("./api/admin/billing");
+const paymentRouter = require("./api/admin/payment");
 
 const router = require("express").Router();
 require("express-group-routes");
@@ -48,8 +50,10 @@ router.group("/api", (api) => {
   api.use(eventRouter);
   api.use(calendarRouter);
   api.use(notificationRouter);
+  api.use(billingRouter)
+  api.use(paymentRouter)
 
-  api.use("/hrm",dsrRouter)
+  api.use("/hrm", dsrRouter)
   api.use(temporaryRouter);
   api.use(dumpRouter);
   api.get(

@@ -98,31 +98,6 @@ const schema = new Schema(
       type: Number,
       default: 0,
     },
-    payments: [
-      {
-        receivedBy: {
-          type: Schema.Types.ObjectId,
-          ref: "User", // Admin or user who created the event
-          required: true,
-        },
-        paidAmount: {
-          type: Number,
-          default: 0,
-        },
-        date: {
-          type: Date,
-          default: null,
-        },
-        paymentMethod: {
-          type: String,
-          default: null,
-        },
-        note: {
-          type: String,
-          default: null,
-        },
-      }
-    ],
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User", // Admin or user who created the event
