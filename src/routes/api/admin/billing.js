@@ -12,7 +12,7 @@ const HasPermission = require("../../../middleware/HasPermission");
 const billingRouter = require("express").Router();
 require("express-group-routes");
 
-billingRouter.group("/billings", (route) => {
+billingRouter.group("/billing", (route) => {
   route.use(Authenticated);
   // CRUD Operations
   route.post("/", HasPermission("billing.create"), BillingController.createBilling);

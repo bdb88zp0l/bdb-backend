@@ -3,17 +3,28 @@ const catchAsync = require("../../../exception/catchAsync");
 const Payment = require("../../../model/Payment");
 const BillingHistory = require("../../../model/BillingHistory");
 const SimpleValidator = require("../../../validator/simpleValidator");
+const { Types } = require("mongoose");
 
 /**
  * Create a new payment for a billing
  */
 exports.createPayment = catchAsync(async (req, res) => {
-  const { billingId, amount, date, note } = req.body;
+  const {
+    billingId,
+    amount,
+    date,
+    note,
+    paymentMethod,
+    transactionId,
+    receipt,
+  } = req.body;
 
   await SimpleValidator(req.body, {
     billingId: "required|mongoid",
-    amount: "required|number|min:0.01",
-    date: "required|date",
+    amount: "required|numeric|min:0.01",
+    date: "required",
+    paymentMethod:
+      "required|string|in:cash,bank_transfer,cheque,credit_card,other",
   });
 
   const billing = await BillingHistory.findById(billingId);
@@ -26,7 +37,30 @@ exports.createPayment = catchAsync(async (req, res) => {
     amount,
     date,
     note,
+    paymentMethod,
     receivedBy: req.user._id,
+    transactionId,
+    receipt,
+  });
+
+  let billingStatus = "partiallyPaid";
+
+  let totalPaidData = await Payment.aggregate([
+    { $match: { billing: new Types.ObjectId(billingId) } },
+    { $group: { _id: null, total: { $sum: "$amount" } } },
+  ]);
+  let totalPaid = totalPaidData[0]?.total || 0;
+
+  if (totalPaid === billing.grandTotal) {
+    billingStatus = "paid";
+  } else if (totalPaid > billing.grandTotal) {
+    billingStatus = "overpaid";
+  }
+
+  await billing.updateOne({
+    $set: {
+      status: billingStatus,
+    },
   });
 
   res.status(201).json({
@@ -60,16 +94,18 @@ exports.getPaymentsForBilling = catchAsync(async (req, res) => {
  */
 exports.updatePayment = catchAsync(async (req, res) => {
   const { paymentId } = req.params;
-  const { amount, date, note } = req.body;
+  const { amount, date, note, paymentMethod, transactionId, receipt } =
+    req.body;
 
   await SimpleValidator(req.body, {
     amount: "number|min:0.01",
     date: "date",
+    paymentMethod: "string|in:cash,bank_transfer,check,credit_card,other",
   });
 
   const updatedPayment = await Payment.findByIdAndUpdate(
     paymentId,
-    { amount, date, note },
+    { amount, date, note, paymentMethod, transactionId, receipt },
     { new: true, runValidators: true }
   );
 

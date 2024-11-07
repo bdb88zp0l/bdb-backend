@@ -6,7 +6,7 @@ const schema = new Schema(
     billing: {
       type: Schema.Types.ObjectId,
       ref: "BillingHistory",
-      default: null
+      default: null,
     },
     receivedBy: {
       type: Schema.Types.ObjectId,
@@ -25,6 +25,15 @@ const schema = new Schema(
       type: String,
       default: null,
     },
+    receipt: {
+      type: String,
+      default: null,
+    },
+    transactionId: {
+      type: String,
+      default: null,
+    },
+
     note: {
       type: String,
       default: null,
@@ -32,8 +41,8 @@ const schema = new Schema(
 
     status: {
       type: String,
-      enum: ["active", "inactive"],
-      default: "active",
+      enum: ["collected", "pending"],
+      default: "collected",
     },
   },
   { timestamps: true }

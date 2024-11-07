@@ -6,22 +6,21 @@ const schema = new Schema(
     case: {
       type: Schema.Types.ObjectId,
       ref: "Case",
-      default: null
+      default: null,
     },
     client: {
       type: Schema.Types.ObjectId,
       ref: "Client", // Admin or user who created the event
-      default: null
+      default: null,
     },
     billingType: {
       type: String,
       enum: ["oneTime", "milestone", "timeBased"],
       default: "oneTime",
-
     },
     currency: {
       type: String,
-      default: "PH"
+      default: "PH",
     },
     title: {
       type: String,
@@ -45,36 +44,34 @@ const schema = new Schema(
     },
     items: [
       {
-
         particulars: {
           type: String,
-          default: null
+          default: null,
         },
 
         quantity: {
           type: Number,
-          default: 0
+          default: 0,
         },
 
         price: {
           type: Number,
-          default: 0
+          default: 0,
         },
 
         discount: {
           type: Number,
-          default: 0
+          default: 0,
         },
 
         vat: {
           type: Number,
-          default: 0
-
+          default: 0,
         },
 
         amount: {
           type: Number,
-          default: 0
+          default: 0,
         },
       },
     ],
@@ -106,8 +103,8 @@ const schema = new Schema(
 
     status: {
       type: String,
-      enum: ["active", "inactive"],
-      default: "active",
+      enum: ["unpaid", "paid", "partiallyPaid", "overdue", "overpaid"],
+      default: "unpaid",
     },
   },
   { timestamps: true }

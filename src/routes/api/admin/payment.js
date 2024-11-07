@@ -6,7 +6,7 @@ const HasPermission = require("../../../middleware/HasPermission");
 const paymentRouter = express.Router();
 
 
-paymentRouter.group("/payment", (route) => {
+paymentRouter.group("/payments", (route) => {
   route.use(Authenticated);
 
 
