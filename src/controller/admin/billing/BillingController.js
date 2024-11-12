@@ -169,6 +169,10 @@ exports.getAllBillings = catchAsync(async (req, res) => {
         billingType: 1,
         currency: 1,
         status: 1,
+        subTotal: 1,
+        discount: 1,
+        tax: 1,
+
         grandTotal: 1,
         totalPaid: 1,
         dueAmount: 1,

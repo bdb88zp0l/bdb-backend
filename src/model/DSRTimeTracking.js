@@ -6,26 +6,26 @@ const schema = new Schema(
     case: {
       type: Schema.Types.ObjectId,
       ref: "Case",
-      default: null
+      default: null,
     },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User", // Admin or user who created the event
-      default: null
+      default: null,
     },
     criteria: {
       type: String,
       enum: ["case"],
-      default: "case"
+      default: "case",
     },
-    title: {
+    task: {
       type: String,
       required: true,
     },
-    description: {
-      type: String,
-      default: null,
-    },
+    // description: {
+    //   type: String,
+    //   default: null,
+    // },
     date: {
       type: Date,
       default: null,
@@ -37,7 +37,8 @@ const schema = new Schema(
     hourlyRate: {
       type: Number,
       default: 0,
-    }, status: {
+    },
+    status: {
       type: String,
       enum: ["active", "inactive"],
       default: "active",

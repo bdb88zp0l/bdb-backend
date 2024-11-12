@@ -10,12 +10,12 @@ exports.createDSRTimeTracking = catchAsync(async (req, res) => {
 
   // Validate incoming data
   await SimpleValidator(req.body, {
-    title: "required|string",
+    task: "required|string",
     case: "required|mongoid",
     hourCount: "required|numeric",
     date: "required",
   });
-  const { title, description, hourCount, date } = req.body;
+  const { task, hourCount, date } = req.body;
 
   let caseInfo = await Case.findById(req.body.case);
 
@@ -35,8 +35,8 @@ exports.createDSRTimeTracking = catchAsync(async (req, res) => {
   }
 
   const newDSRTimeTracking = await DSRTimeTracking.create({
-    title,
-    description,
+    task,
+
     hourCount,
     hourlyRate,
     case: caseInfo._id,
@@ -55,7 +55,7 @@ exports.getAllDSRTimeTrackings = catchAsync(async (req, res) => {
 
   let match = {
     ...(caseId && { case: caseId }),
-    ...(search && { title: { $regex: search, $options: "i" } }),
+    ...(search && { task: { $regex: search, $options: "i" } }),
     user: user._id,
     status: "active",
   };
@@ -117,10 +117,10 @@ exports.getDSRTimeTracking = catchAsync(async (req, res) => {
 });
 
 exports.updateDSRTimeTracking = catchAsync(async (req, res) => {
-  const { title, description, hourCount, date } = req.body;
+  const { task, hourCount, date } = req.body;
 
   await SimpleValidator(req.body, {
-    title: "required|string",
+    task: "required|string",
     case: "required|mongoid",
     hourCount: "required|numeric",
     date: "required",
@@ -134,8 +134,7 @@ exports.updateDSRTimeTracking = catchAsync(async (req, res) => {
   const updatedDSRTimeTracking = await DSRTimeTracking.findByIdAndUpdate(
     req.params.id,
     {
-      title,
-      description,
+      task,
       case: caseInfo._id,
       hourCount,
       date: moment(date).toDate(),

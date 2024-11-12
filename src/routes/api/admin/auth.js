@@ -1,15 +1,18 @@
 /**
  * @fileoverview Admin Authentication Routes
- * 
+ *
  * This module defines the routes for admin authentication, including login and OTP verification.
  * It uses Express Router to group these authentication-related routes under the "/auth" path.
- * 
+ *
  * @module adminAuthRoutes
  * @requires express
  * @requires ../../../controller/admin/auth/LoginController
  */
 
-const { login, verifyLoginWithOTP } = require("../../../controller/admin/auth/LoginController");
+const {
+  login,
+  verifyLoginWithOTP,
+} = require("../../../controller/admin/auth/LoginController");
 
 /**
  * Express router to mount admin authentication related functions on.
