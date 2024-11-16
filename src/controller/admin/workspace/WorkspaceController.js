@@ -211,7 +211,7 @@ exports.updateWorkspace = catchAsync(async (req, res) => {
     name: "required|string",
   });
 
-  const { name, description } = req.body;
+  const { name, description,email,phone,addressLine1, addressLine2 } = req.body;
   const workspaceId = req.params.id;
 
   // Find the workspace
@@ -226,6 +226,10 @@ exports.updateWorkspace = catchAsync(async (req, res) => {
   // Update fields if provided
   if (name) workspace.name = name;
   if (description) workspace.description = description;
+  if (email) workspace.email = email;
+  if (phone) workspace.phone = phone;
+  if (addressLine1) workspace.addressLine1 = addressLine1;
+  if (addressLine2) workspace.addressLine2 = addressLine2;
   if (req.file) {
     let uploadData = await upload(req.file, "workspace");
     const { Key } = uploadData;

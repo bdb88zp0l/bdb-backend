@@ -19,7 +19,8 @@ exports.createBilling = catchAsync(async (req, res) => {
     title,
     billNumber,
     note,
-    date,
+    billingStart,
+    billingEnd,
     dueDate,
     items,
   } = req.body;
@@ -28,7 +29,9 @@ exports.createBilling = catchAsync(async (req, res) => {
     title: "required|string",
     case: "required|mongoid",
     billingType: "required|in:oneTime,milestone,timeBased",
-    date: "required|date",
+    billingStart: "required|date",
+    billingEnd: "required_if:billingType,timeBased",
+
     dueDate: "required|date",
   });
 
@@ -41,26 +44,7 @@ exports.createBilling = catchAsync(async (req, res) => {
   let billingItems = items;
   let calculatedTotals = { subTotal: 0, tax: 0, discount: 0, grandTotal: 0 };
 
-  // Handle time-based billing
-  if (billingType === "timeBased") {
-    const timeTrackings = await DSRTimeTracking.find({
-      case: caseId,
-      status: "active",
-      date: {
-        $gte: date,
-        $lte: dueDate,
-      },
-    });
 
-    billingItems = timeTrackings.map((track) => ({
-      particulars: track.title,
-      quantity: track.hourCount,
-      price: track.hourlyRate,
-      discount: 0,
-      vat: 0,
-      amount: track.hourCount * track.hourlyRate,
-    }));
-  }
 
   // Calculate totals
   calculatedTotals = billingItems.reduce((acc, item) => {
@@ -84,7 +68,8 @@ exports.createBilling = catchAsync(async (req, res) => {
     title,
     billNumber,
     note,
-    date,
+    billingStart,
+    billingEnd,
     dueDate,
     items: billingItems,
     ...calculatedTotals,
@@ -164,7 +149,8 @@ exports.getAllBillings = catchAsync(async (req, res) => {
       $project: {
         title: 1,
         billNumber: 1,
-        date: 1,
+        billingStart: 1,
+        billingEnd: 1,
         dueDate: 1,
         billingType: 1,
         currency: 1,
@@ -178,10 +164,16 @@ exports.getAllBillings = catchAsync(async (req, res) => {
         dueAmount: 1,
         "caseData.title": 1,
         "caseData.caseNumber": 1,
-        "clientData.companyName": 1,
-        "clientData.clientNumber": 1,
+        "clientData": {
+          companyName: 1,
+          clientNumber: 1,
+          phones: 1,
+          emails: 1,
+          addresses: 1
+        },
         items: 1,
         note: 1,
+        createdAt: 1,
       },
     },
     { $sort: { [sortBy]: sortOrder === "desc" ? -1 : 1 } },
@@ -240,11 +232,13 @@ exports.getBilling = catchAsync(async (req, res) => {
  * Update billing details
  */
 exports.updateBilling = catchAsync(async (req, res) => {
-  const { title, billNumber, note, date, dueDate, items, status } = req.body;
+  const { title, billNumber, note,
+    billingStart,
+    billingEnd, dueDate, items, status } = req.body;
 
   await SimpleValidator(req.body, {
     title: "string",
-    date: "date",
+    billingStart: "date",
     dueDate: "date",
   });
 
@@ -295,7 +289,8 @@ exports.updateBilling = catchAsync(async (req, res) => {
       title,
       billNumber,
       note,
-      date,
+      billingStart,
+      billingEnd,
       dueDate,
       ...(items && { items }),
       ...calculatedTotals,

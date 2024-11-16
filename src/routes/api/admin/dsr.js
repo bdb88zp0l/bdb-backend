@@ -14,6 +14,8 @@ dsrRouter.group("/dsr", (dsr) => {
 
   // Get all dsr accessible to the user
   dsr.get("/", HasPermission("dsr.read"), DsrController.getAllDSRTimeTrackings);
+  // Get all dsr for specific case accessible to the user
+  dsr.get("/getDsrRecordsByCase/:caseId", HasPermission("dsr.read"), DsrController.getDsrRecordsByCase);
 
   // Get a specific dsr by ID
   dsr.get("/:id", HasPermission("dsr.read"), DsrController.getDSRTimeTracking);

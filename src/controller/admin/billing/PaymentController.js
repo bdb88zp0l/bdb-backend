@@ -54,7 +54,7 @@ exports.createPayment = catchAsync(async (req, res) => {
   if (totalPaid === billing.grandTotal) {
     billingStatus = "paid";
   } else if (totalPaid > billing.grandTotal) {
-    billingStatus = "overpaid";
+    billingStatus = "overPaid";
   }
 
   await billing.updateOne({

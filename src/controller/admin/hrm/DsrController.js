@@ -5,6 +5,8 @@ const AppError = require("../../../exception/AppError");
 const moment = require("moment");
 const Case = require("../../../model/Case");
 const User = require("../../../model/User");
+const dateQueryGenerator = require("../../../utils/dateQueryGenerator");
+const { Types } = require("mongoose");
 exports.createDSRTimeTracking = catchAsync(async (req, res) => {
   let user = req.user;
 
@@ -157,6 +159,36 @@ exports.deleteDSRTimeTracking = catchAsync(async (req, res) => {
   res.json({
     message: "DSRTimeTracking deleted successfully",
     data: null,
+  });
+});
+
+
+exports.getDsrRecordsByCase = catchAsync(async (req, res) => {
+  let user = req.user;
+
+  const caseId = req.params?.caseId ?? "";
+  if (!caseId) {
+    throw new AppError("Case id is required", 422)
+  }
+  const { fromDate, toDate,search } = req.query;
+
+  let dateQuery = await dateQueryGenerator(fromDate, toDate, "date")
+
+  let match = {
+    ...(caseId && { case: new Types.ObjectId(caseId) }),
+    ...(search && { task: { $regex: search, $options: "i" } }),
+    ...dateQuery
+  };
+
+  const records = await DSRTimeTracking.aggregate([
+    { $match: match },
+
+    { $sort: { date: -1 } },
+  ]);
+
+  res.json({
+    message: "Fetched events successfully",
+    data: records,
   });
 });
 
