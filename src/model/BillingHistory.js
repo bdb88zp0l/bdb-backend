@@ -34,7 +34,11 @@ const schema = new Schema(
       type: String,
       default: null,
     },
-    date: {
+    billingStart: {
+      type: Date,
+      default: null,
+    },
+    billingEnd: {
       type: Date,
       default: null,
     },
@@ -103,7 +107,7 @@ const schema = new Schema(
 
     status: {
       type: String,
-      enum: ["unpaid", "paid", "partiallyPaid", "overdue", "overpaid"],
+      enum: ["unpaid", "paid", "partiallyPaid", "overdue", "overPaid"],
       default: "unpaid",
     },
   },
