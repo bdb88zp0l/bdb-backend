@@ -162,23 +162,24 @@ exports.deleteDSRTimeTracking = catchAsync(async (req, res) => {
   });
 });
 
-
 exports.getDsrRecordsByCase = catchAsync(async (req, res) => {
   let user = req.user;
 
   const caseId = req.params?.caseId ?? "";
   if (!caseId) {
-    throw new AppError("Case id is required", 422)
+    throw new AppError("Case id is required", 422);
   }
-  const { fromDate, toDate,search } = req.query;
+  const { billingStart, billingEnd, search } = req.query;
 
-  let dateQuery = await dateQueryGenerator(fromDate, toDate, "date")
+  let dateQuery = await dateQueryGenerator(billingStart, billingEnd, "date");
 
   let match = {
     ...(caseId && { case: new Types.ObjectId(caseId) }),
     ...(search && { task: { $regex: search, $options: "i" } }),
-    ...dateQuery
+    ...dateQuery,
   };
+
+  console.log(match);
 
   const records = await DSRTimeTracking.aggregate([
     { $match: match },
