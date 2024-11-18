@@ -194,9 +194,23 @@ exports.getDsrRecordsByCase = catchAsync(async (req, res) => {
 });
 
 exports.getData = catchAsync(async (req, res) => {
-  let cases = await Case.find({ status: "active" }).select(
-    "title caseNumber _id"
-  );
+  // let cases = await Case.find({ status: "active" }).select(
+  //   "title caseNumber _id"
+  // );
+
+  let cases = await Case.aggregate([
+    {
+      $match: {
+        status: "active",
+
+        $or: [
+          { members: { $elemMatch: { user: req.user._id } } },
+          { createdBy: req.user._id },
+        ],
+      },
+    },
+    { $project: { title: 1, caseNumber: 1, _id: 1 } },
+  ]);
   let users = await User.find({ status: "activated" }).select(
     "firstName lastName email photo phone"
   );
