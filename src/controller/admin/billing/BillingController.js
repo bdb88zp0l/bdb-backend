@@ -7,12 +7,13 @@ const Client = require("../../../model/Client");
 const DSRTimeTracking = require("../../../model/DSRTimeTracking");
 const SimpleValidator = require("../../../validator/simpleValidator");
 const Payment = require("../../../model/Payment");
+const { getNextBillingNumber } = require("../../../services/BillingService");
 
 /**
  * Creates a new billing record
  */
 exports.createBilling = catchAsync(async (req, res) => {
-  const {
+  let {
     case: caseId,
     billingType,
     currency,
@@ -35,6 +36,15 @@ exports.createBilling = catchAsync(async (req, res) => {
     dueDate: "required|date",
   });
 
+  if (!billNumber) {
+    billNumber = await getNextBillingNumber();
+    console.log("generated bill number", billNumber);
+  }
+  let checkExistingBilling = await BillingHistory.findOne({ billNumber });
+  if (checkExistingBilling) {
+    throw new AppError("Billing number already exists", 422);
+  }
+
   // Validate case and client existence
   const caseData = await Case.findById(caseId);
   if (!caseData) {
@@ -43,8 +53,6 @@ exports.createBilling = catchAsync(async (req, res) => {
 
   let billingItems = items;
   let calculatedTotals = { subTotal: 0, tax: 0, discount: 0, grandTotal: 0 };
-
-
 
   // Calculate totals
   calculatedTotals = billingItems.reduce((acc, item) => {
@@ -164,12 +172,12 @@ exports.getAllBillings = catchAsync(async (req, res) => {
         dueAmount: 1,
         "caseData.title": 1,
         "caseData.caseNumber": 1,
-        "clientData": {
+        clientData: {
           companyName: 1,
           clientNumber: 1,
           phones: 1,
           emails: 1,
-          addresses: 1
+          addresses: 1,
         },
         items: 1,
         note: 1,
@@ -232,9 +240,16 @@ exports.getBilling = catchAsync(async (req, res) => {
  * Update billing details
  */
 exports.updateBilling = catchAsync(async (req, res) => {
-  const { title, billNumber, note,
+  const {
+    title,
+    billNumber,
+    note,
     billingStart,
-    billingEnd, dueDate, items, status } = req.body;
+    billingEnd,
+    dueDate,
+    items,
+    status,
+  } = req.body;
 
   await SimpleValidator(req.body, {
     title: "string",

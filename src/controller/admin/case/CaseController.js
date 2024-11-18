@@ -487,7 +487,7 @@ exports.addMember = catchAsync(async (req, res) => {
   );
 
   res.json({
-    message: "Member added successfully",
+    message: "Member updated successfully",
     data: null,
   });
 });
