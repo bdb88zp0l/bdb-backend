@@ -13,28 +13,28 @@ paymentRouter.group("/payments", (route) => {
   // Route to create a new payment
   route.post(
     "/",
-    HasPermission("payment.create"),
+    HasPermission("billing.payment.create"),
     PaymentController.createPayment
   );
 
   // Route to get all payments for a specific billing
   route.get(
     "/billing/:billingId",
-    HasPermission("payment.read"),
+    // HasPermission("billing.payment.read"),
     PaymentController.getPaymentsForBilling
   );
 
   // Route to update a payment
   route.patch(
     "/:paymentId",
-    HasPermission("payment.update"),
+    // HasPermission("payment.update"),
     PaymentController.updatePayment
   );
 
   // Route to delete a payment
   route.delete(
     "/:paymentId",
-    HasPermission("payment.delete"),
+    // HasPermission("payment.delete"),
     PaymentController.deletePayment
   );
 });
