@@ -58,7 +58,12 @@ exports.createBilling = catchAsync(async (req, res) => {
   calculatedTotals = billingItems.reduce((acc, item) => {
     const itemTotal = item.quantity * item.price;
     const itemDiscount = (itemTotal * item.discount) / 100;
-    const itemVat = ((itemTotal - itemDiscount) * item.vat) / 100;
+
+    const itemVat = (item.vat?.type == "percentage"
+      ? (itemTotal - itemDiscount) * item?.vat?.rate / 100
+      : item?.vat?.type == "flat"
+        ? item?.vat?.rate
+        : 0)
 
     return {
       subTotal: acc.subTotal + itemTotal,
@@ -273,7 +278,11 @@ exports.updateBilling = catchAsync(async (req, res) => {
     calculatedTotals = items.reduce((acc, item) => {
       const itemTotal = item.quantity * item.price;
       const itemDiscount = (itemTotal * item.discount) / 100;
-      const itemVat = ((itemTotal - itemDiscount) * item.vat) / 100;
+      const itemVat = (item.vat?.type == "percentage"
+        ? (itemTotal - itemDiscount) * item?.vat?.rate / 100
+        : item?.vat?.type == "flat"
+          ? item?.vat?.rate
+          : 0);
 
       return {
         subTotal: acc.subTotal + itemTotal,
