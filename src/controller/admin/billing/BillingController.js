@@ -29,7 +29,7 @@ exports.createBilling = catchAsync(async (req, res) => {
   await SimpleValidator(req.body, {
     title: "required|string",
     case: "required|mongoid",
-    billingType: "required|in:oneTime,milestone,timeBased",
+    billingType: "required|in:oneTime,progressBased,timeBased,taskBased",
     billingStart: "required|date",
     billingEnd: "required_if:billingType,timeBased",
 
