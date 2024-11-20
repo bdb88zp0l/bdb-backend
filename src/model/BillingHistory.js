@@ -15,7 +15,7 @@ const schema = new Schema(
     },
     billingType: {
       type: String,
-      enum: ["oneTime", "milestone", "timeBased"],
+      enum: ["oneTime", "progressBased", "timeBased", "taskBased"],
       default: "oneTime",
     },
     currency: {
@@ -69,8 +69,8 @@ const schema = new Schema(
         },
 
         vat: {
-          type: Number,
-          default: 0,
+          type: Object,
+          default: {},
         },
 
         amount: {

@@ -22,21 +22,21 @@ caseTeamDesignationRouter.group(
 
     caseTeamDesignation.get(
       "/",
-      HasPermission("caseTeamDesignation.read"),
+      // HasPermission("caseTeamDesignation.read"),
       CaseTeamDesignationController.getAllCaseTeamDesignations
     );
 
     // Bulk create or update designations
     caseTeamDesignation.post(
       "/",
-      HasPermission("caseTeamDesignation.create"),
+      // HasPermission("caseTeamDesignation.create"),
       CaseTeamDesignationController.bulkCreateOrUpdateDesignations
     );
 
     // Bulk soft delete designations
     caseTeamDesignation.delete(
       "/",
-      HasPermission("caseTeamDesignation.delete"),
+      // HasPermission("caseTeamDesignation.delete"),
       CaseTeamDesignationController.bulkDeleteDesignations
     );
   }

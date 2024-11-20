@@ -333,7 +333,20 @@ exports.getAllCases = catchAsync(async (req, res) => {
  */
 exports.getCase = catchAsync(async (req, res) => {
   const caseData = await Case.findById(req.params.id)
-    .populate("client", "companyName clientNumber emails addresses phones _id")
+    .populate({
+      path: "client",
+      select: "companyName clientNumber emails addresses phones _id contact tin",
+      populate: [{
+        path: "contact",
+        select: "firstName lastName emails photo _id phones",
+      }, {
+        path: "supervisingPartner",
+        select: "firstName lastName emails photo _id phones",
+      }, {
+        path: "referredBy",
+        select: "firstName lastName emails photo _id phones",
+      }],
+    })
     .populate("createdBy", "firstName lastName")
     // .populate("team")
     // .populate("team.users.user")
@@ -593,7 +606,13 @@ exports.getData = catchAsync(async (req, res) => {
   let clients = await Client.find({
     status: "active",
     workspace: defaultWorkspace,
-  }).select("companyName clientNumber accountType");
+  }).select("companyName clientNumber accountType").populate({
+    path: "supervisingPartner",
+    select: "firstName lastName emails photo _id phones",
+  }).populate({
+    path: "referredBy",
+    select: "firstName lastName emails photo _id phones",
+  });
   let teams = await Team.find({ status: "active" });
 
   res.json({
