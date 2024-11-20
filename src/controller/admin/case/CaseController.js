@@ -333,7 +333,14 @@ exports.getAllCases = catchAsync(async (req, res) => {
  */
 exports.getCase = catchAsync(async (req, res) => {
   const caseData = await Case.findById(req.params.id)
-    .populate("client", "companyName clientNumber emails addresses phones _id")
+    .populate({
+      path: "client",
+      select: "companyName clientNumber emails addresses phones _id contact tin",
+      populate: {
+        path: "contact",
+        select: "firstName lastName emails photo _id phones",
+      },
+    })
     .populate("createdBy", "firstName lastName")
     // .populate("team")
     // .populate("team.users.user")
