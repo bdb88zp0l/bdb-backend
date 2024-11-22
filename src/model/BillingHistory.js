@@ -22,10 +22,10 @@ const schema = new Schema(
       type: String,
       default: "PH",
     },
-    title: {
-      type: String,
-      required: true,
-    },
+    // title: {
+    //   type: String,
+    //   required: true,
+    // },
     billNumber: {
       type: String,
       default: null,

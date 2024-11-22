@@ -17,7 +17,7 @@ exports.createBilling = catchAsync(async (req, res) => {
     case: caseId,
     billingType,
     currency,
-    title,
+    // title,
     billNumber,
     note,
     billingStart,
@@ -27,7 +27,7 @@ exports.createBilling = catchAsync(async (req, res) => {
   } = req.body;
 
   await SimpleValidator(req.body, {
-    title: "required|string",
+    // title: "required|string",
     case: "required|mongoid",
     billingType: "required|in:oneTime,progressBased,timeBased,taskBased",
     billingStart: "required|date",
@@ -59,11 +59,12 @@ exports.createBilling = catchAsync(async (req, res) => {
     const itemTotal = item.quantity * item.price;
     const itemDiscount = (itemTotal * item.discount) / 100;
 
-    const itemVat = (item.vat?.type == "percentage"
-      ? (itemTotal - itemDiscount) * item?.vat?.rate / 100
-      : item?.vat?.type == "flat"
+    const itemVat =
+      item.vat?.type == "percentage"
+        ? ((itemTotal - itemDiscount) * item?.vat?.rate) / 100
+        : item?.vat?.type == "flat"
         ? item?.vat?.rate
-        : 0)
+        : 0;
 
     return {
       subTotal: acc.subTotal + itemTotal,
@@ -78,7 +79,7 @@ exports.createBilling = catchAsync(async (req, res) => {
     client: caseData.client,
     billingType,
     currency,
-    title,
+    // title,
     billNumber,
     note,
     billingStart,
@@ -117,7 +118,7 @@ exports.getAllBillings = catchAsync(async (req, res) => {
     ...(search && {
       $or: [
         { billNumber: { $regex: search, $options: "i" } },
-        { title: { $regex: search, $options: "i" } },
+        // { title: { $regex: search, $options: "i" } },
       ],
     }),
   };
@@ -160,7 +161,7 @@ exports.getAllBillings = catchAsync(async (req, res) => {
     },
     {
       $project: {
-        title: 1,
+        // title: 1,
         billNumber: 1,
         billingStart: 1,
         billingEnd: 1,
@@ -175,7 +176,7 @@ exports.getAllBillings = catchAsync(async (req, res) => {
         grandTotal: 1,
         totalPaid: 1,
         dueAmount: 1,
-        "caseData.title": 1,
+        // "caseData.title": 1,
         "caseData.caseNumber": 1,
         clientData: {
           companyName: 1,
@@ -246,7 +247,7 @@ exports.getBilling = catchAsync(async (req, res) => {
  */
 exports.updateBilling = catchAsync(async (req, res) => {
   const {
-    title,
+    // title,
     billNumber,
     note,
     billingStart,
@@ -257,7 +258,7 @@ exports.updateBilling = catchAsync(async (req, res) => {
   } = req.body;
 
   await SimpleValidator(req.body, {
-    title: "string",
+    // title: "string",
     billingStart: "date",
     dueDate: "date",
   });
@@ -278,11 +279,12 @@ exports.updateBilling = catchAsync(async (req, res) => {
     calculatedTotals = items.reduce((acc, item) => {
       const itemTotal = item.quantity * item.price;
       const itemDiscount = (itemTotal * item.discount) / 100;
-      const itemVat = (item.vat?.type == "percentage"
-        ? (itemTotal - itemDiscount) * item?.vat?.rate / 100
-        : item?.vat?.type == "flat"
+      const itemVat =
+        item.vat?.type == "percentage"
+          ? ((itemTotal - itemDiscount) * item?.vat?.rate) / 100
+          : item?.vat?.type == "flat"
           ? item?.vat?.rate
-          : 0);
+          : 0;
 
       return {
         subTotal: acc.subTotal + itemTotal,
@@ -310,7 +312,7 @@ exports.updateBilling = catchAsync(async (req, res) => {
   const updatedBilling = await BillingHistory.findByIdAndUpdate(
     req.params.id,
     {
-      title,
+      // title,
       billNumber,
       note,
       billingStart,
