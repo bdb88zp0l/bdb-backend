@@ -59,7 +59,6 @@ const caseSchema = new Schema(
       type: Date,
       default: null,
     },
-
     defaultBillingType: {
       type: String,
       default: null,
@@ -102,6 +101,34 @@ const caseSchema = new Schema(
       required: true,
     },
 
+    natureOfWork: {
+      type: String,
+      default: null,
+    },
+    fixedFee: {
+      type: Number,
+      default: 0,
+    },
+    acceptanceFee: {
+      type: Number,
+      default: 0,
+    },
+    successFee: {
+      type: Number,
+      default: 0,
+    },
+    capFee: {
+      type: Number,
+      default: 0,
+    },
+    fixedOpe: {
+      type: Number,
+      default: 0,
+    },
+    nonFixedOpe: {
+      type: Number,
+      default: 0,
+    },
     team: {
       type: Schema.Types.ObjectId,
       ref: "Team", // Single team related to the case

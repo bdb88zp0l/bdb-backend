@@ -199,6 +199,36 @@ temporaryRouter.group("/temporary", (temporary) => {
       data: "Done"
     });
   }));
+
+
+
+  temporary.get("/dump-fileNumberToCaseNumber", catchAsync(async (req, res) => {
+
+
+    let cases = await Case.find({
+      "metaData.FILENUMBER": {
+        $exists: true
+      }
+    })
+
+    let count = 0;
+    for (const element of cases) {
+      await Case.findByIdAndUpdate(element._id, {
+        caseNumber: element?.metaData?.FILENUMBER
+      })
+
+      count++
+
+      console.log(count)
+
+    }
+
+
+    res.json({
+      status: "Dumped successfully",
+      data: cases
+    });
+  }));
 });
 
 module.exports = temporaryRouter;
