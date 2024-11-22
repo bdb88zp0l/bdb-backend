@@ -101,7 +101,6 @@ const caseSchema = new Schema(
       required: true,
     },
 
-
     natureOfWork: {
       type: String,
       default: null,
@@ -126,7 +125,7 @@ const caseSchema = new Schema(
       type: Number,
       default: 0,
     },
-    nonNixedOpe: {
+    nonFixedOpe: {
       type: Number,
       default: 0,
     },

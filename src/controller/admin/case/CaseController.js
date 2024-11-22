@@ -68,8 +68,15 @@ exports.createCase = catchAsync(async (req, res) => {
     team,
     priority,
     caseNumber,
+    natureOfWork, //n
+    fixedFee,
+    acceptanceFee,
+    successFee,
+    capFee,
+    fixedOpe,
+    nonFixedOpe,
   } = req.body;
-
+  console.log(req.body, { fixedOpe }, "fixedOpe");
   await SimpleValidator(req.body, {
     title: "required|string",
     client: "required|mongoid",
@@ -117,6 +124,13 @@ exports.createCase = catchAsync(async (req, res) => {
     createdBy: req.user._id,
     team,
     priority,
+    natureOfWork,
+    fixedFee,
+    acceptanceFee,
+    successFee,
+    capFee,
+    fixedOpe,
+    nonFixedOpe,
     statusHistory: [
       {
         status: "Created",
@@ -430,8 +444,14 @@ exports.updateCase = catchAsync(async (req, res) => {
     billingEnd,
     priority,
     team,
+    natureOfWork, //n
+    fixedFee,
+    acceptanceFee,
+    successFee,
+    capFee,
+    fixedOpe,
+    nonFixedOpe,
   } = req.body;
-
   await SimpleValidator(req.body, {
     caseNumber: "required|string",
     title: "required|string",
@@ -461,6 +481,13 @@ exports.updateCase = catchAsync(async (req, res) => {
       updatedBy: req.user._id,
       priority,
       team,
+      natureOfWork, //n
+      fixedFee,
+      acceptanceFee,
+      successFee,
+      capFee,
+      fixedOpe,
+      nonFixedOpe,
     },
     {
       new: true,
