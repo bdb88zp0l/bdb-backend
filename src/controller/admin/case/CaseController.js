@@ -20,6 +20,7 @@
  * @requires ../../../validator/simpleValidator
  */
 
+const { upload } = require("../../../config/file");
 const AppError = require("../../../exception/AppError");
 const catchAsync = require("../../../exception/catchAsync");
 const Case = require("../../../model/Case");
@@ -599,18 +600,37 @@ exports.updateCaseStatus = catchAsync(async (req, res) => {
     throw new AppError("Case not found", 404);
   }
 
+
+
+
+
   let statusHistory = foundCase?.statusHistory ?? [];
 
-  // Add status update to history
-  statusHistory.push({
+  let files = []
+
+  // Ensure at least one file was uploaded
+  if (req.files.length > 0) {
+    for (const element of req.files) {
+      let uploadData = await upload(element, "case-status");
+      files.push(uploadData)
+
+    }
+  }
+  let data = {
     status,
     description,
+    files,
     date: new Date(),
     updatedBy: req.user._id,
-  });
+  }
+
+
+  // Add status update to history
+  statusHistory.push(data);
 
   await Case.findByIdAndUpdate(req.params.id, {
     statusHistory,
+    caseStatus: status
   });
 
   res.json({
