@@ -18,15 +18,26 @@ exports.getDashboard = catchAsync(async (req, res) => {
 
     let caseStatusStatistics = await Case.aggregate([
         {
-            $group: {
-                _id: "$caseStatus",   // Group by the 'fieldName' field
-                count: { $sum: 1 }   // Count each document in the group
+            $addFields: {
+                isActive: {
+                    $cond: {
+                        if: { $eq: ["$caseStatus", "AC"] },
+                        then: "activeCase",
+                        else: "inactiveCase"
+                    }
+                }
             }
         },
         {
-            $sort: { count: -1 }   // Optional: sort by count in descending order
+            $group: {
+                _id: "$isActive",
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { _id: 1 }  // Sort alphabetically (activeCase will come before inactiveCase)
         }
-    ])
+    ]);
 
     const clientMonthlyData = await Client.aggregate([
         // First stage: Group by year, month, and status
@@ -154,13 +165,25 @@ exports.getDashboard = catchAsync(async (req, res) => {
     ]);
 
     const caseMonthlyData = await Case.aggregate([
-        // First stage: Group by year, month, and status
+        // First add a field to categorize cases as active or inactive
+        {
+            $addFields: {
+                caseCategory: {
+                    $cond: {
+                        if: { $eq: ["$caseStatus", "AC"] },
+                        then: "active",
+                        else: "inactive"
+                    }
+                }
+            }
+        },
+        // Group by year, month, and the new category
         {
             $group: {
                 _id: {
                     year: { $year: "$startDate" },
                     month: { $month: "$startDate" },
-                    status: "$status"
+                    status: "$caseCategory"  // Using the new caseCategory instead of status
                 },
                 monthCount: { $sum: 1 }
             }
@@ -170,7 +193,7 @@ exports.getDashboard = catchAsync(async (req, res) => {
         // Calculate cumulative counts for each status
         {
             $group: {
-                _id: "$_id.status",
+                _id: "$_id.status",  // This will now group by active/inactive
                 monthlyData: {
                     $push: {
                         year: "$_id.year",

@@ -214,7 +214,11 @@ temporaryRouter.group("/temporary", (temporary) => {
     let count = 0;
     for (const element of cases) {
       await Case.findByIdAndUpdate(element._id, {
-        caseNumber: element?.metaData?.FILENUMBER
+        natureOfWork: element?.metaData?.CONTROLNAME, //n
+        fixedFee: element?.metaData?.FIXEDFEE,
+        acceptanceFee: element?.metaData?.ACCEPTANCEFEE,
+        successFee: element?.metaData?.SUCCESSFEE,
+        capFee: element?.metaData?.CAPAMT,
       })
 
       count++

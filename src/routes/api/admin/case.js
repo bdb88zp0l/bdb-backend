@@ -5,6 +5,7 @@
  * Requires authentication and appropriate permissions for each operation.
  */
 
+const multerMiddleware = require("../../../config/multer");
 const CaseController = require("../../../controller/admin/case/CaseController");
 const Authenticated = require("../../../middleware/Authenticated");
 const HasPermission = require("../../../middleware/HasPermission");
@@ -25,6 +26,8 @@ caseRouter.group("/cases", (route) => {
   route.patch(
     "/:id/status",
     HasPermission("case.update"),
+
+    multerMiddleware.array("files"),
     CaseController.updateCaseStatus
   );
   route.post("/:id/members", HasPermission("case.update"), CaseController.addMember);

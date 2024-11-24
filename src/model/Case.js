@@ -43,7 +43,7 @@ const caseSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["active", "deleted", "inactive"],
+      // enum: ["active", "deleted", "inactive"],
       default: "active",
     },
     client: {
@@ -165,6 +165,10 @@ const caseSchema = new Schema(
           type: String,
           default: null,
         },
+        files: [{
+          type: Object,
+          default: {},
+        }],
         date: {
           type: Date,
           default: Date.now,
