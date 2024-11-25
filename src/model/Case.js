@@ -141,10 +141,6 @@ const caseSchema = new Schema(
           ref: "User", // Referencing the User model
           required: true,
         },
-        designation: {
-          type: Schema.Types.ObjectId,
-          ref: "CaseTeamDesignation",
-        },
         rate: {
           type: Number,
           default: 0,
@@ -165,10 +161,12 @@ const caseSchema = new Schema(
           type: String,
           default: null,
         },
-        files: [{
-          type: Object,
-          default: {},
-        }],
+        files: [
+          {
+            type: Object,
+            default: {},
+          },
+        ],
         date: {
           type: Date,
           default: Date.now,
