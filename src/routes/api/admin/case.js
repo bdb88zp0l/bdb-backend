@@ -30,7 +30,7 @@ caseRouter.group("/cases", (route) => {
     multerMiddleware.array("files"),
     CaseController.updateCaseStatus
   );
-  route.post("/:id/members", HasPermission("case.update"), CaseController.addMember);
+  route.post("/:id/members",  CaseController.addMember);
   // Get data for case page
   route.get("/data/get", CaseController.getData);
 });
