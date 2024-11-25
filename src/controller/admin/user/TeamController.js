@@ -1,9 +1,9 @@
 /**
  * Team Controller
- * 
+ *
  * This module contains all the controller functions for team-related operations.
  * It includes CRUD operations for teams, user management within teams, and data retrieval for team-related forms.
- * 
+ *
  * @module TeamController
  */
 
@@ -16,8 +16,8 @@ const SimpleValidator = require("../../../validator/simpleValidator");
 
 // Constants for team status
 const TEAM_STATUS = {
-  ACTIVE: 'active',
-  DELETED: 'deleted',
+  ACTIVE: "active",
+  DELETED: "deleted",
 };
 
 /**
@@ -77,9 +77,9 @@ exports.getAllTeams = catchAsync(async (req, res) => {
     {
       $lookup: {
         from: "users", // Lookup users from the 'users' collection
-        localField: "users.user", // The 'user' field inside 'users' array
+        localField: "users", // The 'user' field inside 'users' array
         foreignField: "_id", // Foreign field _id in 'users' collection
-        as: "populatedUsers", // Populate the users data into 'populatedUsers'
+        as: "users", // Populate the users data into 'users'
         pipeline: [
           {
             $project: {
@@ -96,57 +96,7 @@ exports.getAllTeams = catchAsync(async (req, res) => {
       },
     },
     // Lookup designations for users
-    {
-      $lookup: {
-        from: "caseteamdesignations", // Lookup designations from 'CaseTeamDesignation'
-        localField: "users.designation", // The 'designation' field inside 'users' array
-        foreignField: "_id", // Foreign field _id in 'CaseTeamDesignation'
-        as: "populatedDesignations", // Populate designation data into 'populatedDesignations'
-      },
-    },
-    // Unwind the users array for further processing
-    { $unwind: "$users" },
-    // Add fields to map each user's populated data
-    {
-      $addFields: {
-        "users.user": {
-          $arrayElemAt: [
-            {
-              $filter: {
-                input: "$populatedUsers",
-                as: "user",
-                cond: { $eq: ["$$user._id", "$users.user"] },
-              },
-            },
-            0,
-          ],
-        },
-        "users.designation": {
-          $arrayElemAt: [
-            {
-              $filter: {
-                input: "$populatedDesignations",
-                as: "designation",
-                cond: { $eq: ["$$designation._id", "$users.designation"] },
-              },
-            },
-            0,
-          ],
-        },
-      },
-    },
-    // Group back the users into an array
-    {
-      $group: {
-        _id: "$_id",
-        title: { $first: "$title" },
-        description: { $first: "$description" },
-        createdAt: { $first: "$createdAt" },
-        status: { $first: "$status" },
-        createdAt: { $first: "$createdAt" },
-        users: { $push: "$users" },
-      },
-    },
+
     {
       $sort: { createdAt: -1 },
     },

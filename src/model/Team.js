@@ -14,15 +14,9 @@ const teamSchema = new Schema(
     },
     users: [
       {
-        user: {
-          type: Schema.Types.ObjectId,
-          ref: "User", // Referencing the User model
-          required: true,
-        },
-        designation: {
-          type: Schema.Types.ObjectId,
-          ref: "CaseTeamDesignation",
-        }
+        type: Schema.Types.ObjectId,
+        ref: "User", // Referencing the User model
+        required: true,
       },
     ],
     createdBy: {
