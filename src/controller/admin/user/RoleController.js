@@ -1,10 +1,10 @@
 /**
  * Role Controller
- * 
+ *
  * This module contains all the controller functions for role-related operations.
  * It provides CRUD (Create, Read, Update, Delete) operations for managing roles
  * in the application. Each role can have a set of permissions associated with it.
- * 
+ *
  * @module RoleController
  * @requires AppError
  * @requires catchAsync
@@ -19,7 +19,7 @@ const SimpleValidator = require("../../../validator/simpleValidator");
 
 /**
  * Create a new role
- * 
+ *
  * This function validates the incoming data, creates a new role with the
  * provided name and permissions, and returns the created role.
  *
@@ -56,7 +56,7 @@ exports.createRole = catchAsync(async (req, res) => {
 
 /**
  * Get all roles (excluding soft-deleted ones)
- * 
+ *
  * This function retrieves all non-deleted roles from the database.
  *
  * @function
@@ -66,7 +66,12 @@ exports.createRole = catchAsync(async (req, res) => {
  * @returns {Promise<void>} - Resolves with an array of role data
  */
 exports.getAllRoles = catchAsync(async (req, res) => {
-  const roles = await Role.find({ deleted: false });
+  const { search } = req.query;
+  let match = {
+    deleted: false,
+    ...(search && { name: { $regex: search, $options: "i" } }),
+  };
+  const roles = await Role.find(match).sort({ name: -1 });
 
   res.json({
     message: "Roles fetched successfully",
@@ -76,7 +81,7 @@ exports.getAllRoles = catchAsync(async (req, res) => {
 
 /**
  * Get a specific role by ID
- * 
+ *
  * This function retrieves a single non-deleted role by its ID.
  *
  * @function
@@ -103,7 +108,7 @@ exports.getRole = catchAsync(async (req, res) => {
 
 /**
  * Update a specific role by ID
- * 
+ *
  * This function validates the incoming data, finds the role by ID,
  * updates its fields if provided, and returns the updated role.
  *
@@ -149,7 +154,7 @@ exports.updateRole = catchAsync(async (req, res) => {
 
 /**
  * Soft delete a specific role by ID
- * 
+ *
  * This function finds a role by ID and marks it as deleted (soft delete).
  *
  * @function
