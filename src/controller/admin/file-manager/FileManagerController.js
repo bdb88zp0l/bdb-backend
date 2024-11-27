@@ -90,28 +90,32 @@ exports.getPaginatedDocumentNodes = catchAsync(async (req, res) => {
         sharedWith: { $in: [req.user._id] },
         visibility: "protected",
       },
+
+      ...req.user?.roleType === "superAdmin" && [{
+        visibility: { $in: ["protected", "private", "public"] }
+      }]
     ],
 
     ...(search && { title: { $regex: search, $options: "i" } }),
     ...(filter === "favourite"
       ? { whitelistedUsers: { $in: [userId] }, nodeType: "document" } // Check if the userId is in whitelistedUsers
       : filter === "shared"
-      ? {
+        ? {
           sharedWith: { $in: [req.user._id] },
           sharedWithTeams: { $in: teams.map((team) => team._id) },
         }
-      : filter === "recycleBin"
-      ? { status: "deleted" }
-      : filter === "recent"
-      ? { nodeType: "document" }
-      : filter === "cases"
-      ? {
-          case: {
-            $ne: null,
-            $exists: true,
-          },
-        }
-      : {}),
+        : filter === "recycleBin"
+          ? { status: "deleted" }
+          : filter === "recent"
+            ? { nodeType: "document" }
+            : filter === "cases"
+              ? {
+                case: {
+                  $ne: null,
+                  $exists: true,
+                },
+              }
+              : {}),
     ...(filter !== "recycleBin" && { status: "active" }),
   };
   // console.log("match", match);
@@ -208,13 +212,13 @@ exports.getPaginatedDocumentNodes = catchAsync(async (req, res) => {
     { $unwind: { path: "$case", preserveNullAndEmptyArrays: true } },
     ...(serviceType
       ? [
-          {
-            $match: {
-              "case.serviceType": serviceType,
-              nodeType: "document",
-            },
+        {
+          $match: {
+            "case.serviceType": serviceType,
+            nodeType: "document",
           },
-        ]
+        },
+      ]
       : []),
     // Add a field to count children using paperMergeNodeId and paperMergeParentNodeId
     {
@@ -640,10 +644,10 @@ exports.uploadDocument = catchAsync(async (req, res) => {
       nodeType: "document",
       ...(visibility == "inherit"
         ? {
-            visibility: parent?.visibility ?? "private",
-            sharedWith: parent?.sharedWith ?? [],
-            sharedWithTeams: parent?.sharedWithTeams ?? [],
-          }
+          visibility: parent?.visibility ?? "private",
+          sharedWith: parent?.sharedWith ?? [],
+          sharedWithTeams: parent?.sharedWithTeams ?? [],
+        }
         : { visibility }),
       ...(visibility == "protected" && {
         sharedWith: sharedWith,
