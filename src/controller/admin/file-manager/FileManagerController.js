@@ -1,11 +1,11 @@
 /**
  * @fileoverview File Manager Controller
- * 
+ *
  * This module provides controller functions for managing files and folders,
  * integrating with PaperMerge for document storage and retrieval. It handles
  * operations such as listing, creating, deleting, and retrieving file/folder
  * information.
- * 
+ *
  * @module FileManagerController
  * @requires mongoose
  * @requires ../../../config/axios.config
@@ -43,7 +43,7 @@ const Team = require("../../../model/Team");
 
 /**
  * Retrieves paginated document nodes based on various filters and parameters
- * 
+ *
  * @function getPaginatedDocumentNodes
  * @async
  * @param {Object} req - Express request object
@@ -84,6 +84,10 @@ exports.getPaginatedDocumentNodes = catchAsync(async (req, res) => {
       { createdBy: req.user._id, visibility: "private" },
       {
         sharedWithTeams: { $in: teams.map((team) => team._id) },
+        visibility: "protected",
+      },
+      {
+        sharedWith: { $in: [req.user._id] },
         visibility: "protected",
       },
     ],
@@ -299,7 +303,7 @@ exports.getPaginatedDocumentNodes = catchAsync(async (req, res) => {
 
 /**
  * Fetches nodes (files and folders) from Papermerge
- * 
+ *
  * @function nodes
  * @async
  * @param {Object} req - Express request object
@@ -334,7 +338,7 @@ exports.nodes = catchAsync(async (req, res) => {
 
 /**
  * Fetches the thumbnail image for a specific document
- * 
+ *
  * @function getThumbnail
  * @async
  * @param {Object} req - Express request object
@@ -364,7 +368,7 @@ exports.getThumbnail = catchAsync(async (req, res) => {
 
 /**
  * Fetches a page image from a given URL in Papermerge
- * 
+ *
  * @function getPageImage
  * @async
  * @param {Object} req - Express request object
@@ -401,7 +405,7 @@ exports.getPageImage = catchAsync(async (req, res) => {
 
 /**
  * Fetches information for a specific folder in Papermerge
- * 
+ *
  * @function getFolderInfo
  * @async
  * @param {Object} req - Express request object
@@ -425,7 +429,7 @@ exports.getFolderInfo = catchAsync(async (req, res) => {
 
 /**
  * Fetches information for a specific document in Papermerge
- * 
+ *
  * @function getDocumentInfo
  * @async
  * @param {Object} req - Express request object
@@ -458,7 +462,7 @@ exports.getDocumentInfo = catchAsync(async (req, res) => {
 
 /**
  * Creates a new node (folder or document) in Papermerge
- * 
+ *
  * @function createNode
  * @async
  * @param {Object} req - Express request object
@@ -516,7 +520,7 @@ exports.createNode = catchAsync(async (req, res) => {
 
 /**
  * Deletes nodes (files or folders) in Papermerge
- * 
+ *
  * @function deleteNodes
  * @async
  * @param {Object} req - Express request object
@@ -559,7 +563,7 @@ exports.deleteNodes = catchAsync(async (req, res) => {
 
 /**
  * Uploads a document to Papermerge and associates it with a case
- * 
+ *
  * @function uploadDocument
  * @async
  * @param {Object} req - Express request object
@@ -656,7 +660,7 @@ exports.uploadDocument = catchAsync(async (req, res) => {
 
 /**
  * Searches for documents in Papermerge
- * 
+ *
  * @function search
  * @async
  * @param {Object} req - Express request object
@@ -698,7 +702,7 @@ exports.search = catchAsync(async (req, res) => {
 
 /**
  * Add or remove a user from the `whitelistedUsers` (favorites) for a document
- * 
+ *
  * @function toggleFavourite
  * @async
  * @param {Object} req - Express request object
@@ -749,7 +753,7 @@ exports.toggleFavourite = catchAsync(async (req, res) => {
 
 /**
  * Fetches home and inbox folder IDs from Papermerge
- * 
+ *
  * @function pageData
  * @async
  * @param {Object} req - Express request object
