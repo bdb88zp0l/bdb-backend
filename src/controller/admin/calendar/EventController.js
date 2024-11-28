@@ -176,7 +176,8 @@ exports.getEvent = catchAsync(async (req, res) => {
  * @throws {AppError} - If the event is not found or validation fails
  */
 exports.updateEvent = catchAsync(async (req, res) => {
-  const { title, description, startDate, endDate } = req.body;
+  const { title, description, startDate, endDate, location, calendar } =
+    req.body;
 
   await SimpleValidator(req.body, {
     title: "string",
@@ -191,6 +192,8 @@ exports.updateEvent = catchAsync(async (req, res) => {
       description,
       startDate,
       endDate,
+      location,
+      calendar,
       lastUpdatedBy: req.user._id,
     },
     { runValidators: true }
