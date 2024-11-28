@@ -1,11 +1,11 @@
 /**
  * @fileoverview Event Controller
- * 
+ *
  * This module provides controller functions for managing events in the calendar system.
  * It handles CRUD operations for events, including creation, retrieval, updating,
  * and soft deletion of event records. The controller also manages related data
  * such as attendees, reminders, and calendar associations.
- * 
+ *
  * @module EventController
  * @requires ../../../exception/catchAsync
  * @requires ../../../validator/simpleValidator
@@ -26,7 +26,7 @@ const moment = require("moment");
 
 /**
  * Creates a new event
- * 
+ *
  * This function handles the creation of a new event in the system. It validates
  * the incoming data, creates a new event in the database, and triggers an
  * EventCreated event.
@@ -93,7 +93,7 @@ exports.createEvent = catchAsync(async (req, res) => {
 
 /**
  * Retrieves all events for the logged-in user based on calendar permissions
- * 
+ *
  * This function fetches events that the user has access to, including events
  * from public calendars and calendars shared with the user.
  *
@@ -135,7 +135,7 @@ exports.getAllEvents = catchAsync(async (req, res) => {
 
 /**
  * Retrieves a specific event by ID
- * 
+ *
  * @function getEvent
  * @async
  * @param {Object} req - The HTTP request object
@@ -163,7 +163,7 @@ exports.getEvent = catchAsync(async (req, res) => {
 
 /**
  * Updates an existing event
- * 
+ *
  * @function updateEvent
  * @async
  * @param {Object} req - The HTTP request object
@@ -176,7 +176,8 @@ exports.getEvent = catchAsync(async (req, res) => {
  * @throws {AppError} - If the event is not found or validation fails
  */
 exports.updateEvent = catchAsync(async (req, res) => {
-  const { title, description, startDate, endDate } = req.body;
+  const { title, description, startDate, endDate, location, calendar } =
+    req.body;
 
   await SimpleValidator(req.body, {
     title: "string",
@@ -191,6 +192,8 @@ exports.updateEvent = catchAsync(async (req, res) => {
       description,
       startDate,
       endDate,
+      location,
+      calendar,
       lastUpdatedBy: req.user._id,
     },
     { runValidators: true }
@@ -211,7 +214,7 @@ exports.updateEvent = catchAsync(async (req, res) => {
 
 /**
  * Soft deletes an event by updating its status to "cancelled"
- * 
+ *
  * @function deleteEvent
  * @async
  * @param {Object} req - The HTTP request object
